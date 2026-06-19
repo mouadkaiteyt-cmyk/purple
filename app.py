@@ -38,8 +38,8 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    reward_normal = db.Column(db.Float, default=0.05)
-    reward_upgraded = db.Column(db.Float, default=0.5)
+    reward_normal = db.Column(db.Float, default=0.2)
+    reward_upgraded = db.Column(db.Float, default=1.0)
 
 class CompletedTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -106,9 +106,9 @@ def register():
                 
                 # Reward the referrer
                 if referrer.is_upgraded:
-                    referrer.balance += 0.1
+                    referrer.balance += 0.2
                 else:
-                    referrer.balance += 0.01
+                    referrer.balance += 0.05
                 db.session.add(referrer)
 
         new_user = User(
@@ -255,7 +255,7 @@ def upgrade():
     
     current_user.is_upgraded = True
     db.session.commit()
-    flash('تم ترقية حسابك بنجاح! ستحصل الآن على 0.1 دولار لكل إحالة و 0.5 دولار للمهمة.', 'success')
+    flash('تم ترقية حسابك بنجاح! ستحصل الآن على 0.2 دولار لكل إحالة و 1 دولار للمهمة.', 'success')
     return redirect(url_for('dashboard'))
 
 @app.route('/tasks')

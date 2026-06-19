@@ -69,8 +69,8 @@
                                 <svg class="w-4 h-4 text-rose-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                             </div>
                             <div>
-                                <p class="text-sm font-bold text-rose-100">حساب CCP غير مكتوب</p>
-                                <p class="text-xs text-rose-200/70">يرجى إضافته لتتمكن من السحب</p>
+                                <p class="text-sm font-bold text-rose-100">بيانات الدفع (CCP) غير مكتملة</p>
+                                <p class="text-xs text-rose-200/70">يرجى استكمال إعدادات الدفع لتتمكن من سحب أرباحك</p>
                             </div>
                         </div>
                     {% endif %}
@@ -134,8 +134,8 @@
         
         <div class="bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-100 mb-6">
             <p class="text-slate-700 text-sm leading-relaxed">
-                قم بنسخ هذا الرابط ومشاركته مع أصدقائك أو متابعيك على انستغرام وغيرها من المنصات. 
-                ستحصل على <strong class="text-emerald-600 font-bold px-2 py-1 bg-emerald-50 rounded-lg">{% if user.is_upgraded %}0.1${% else %}0.01${% endif %}</strong> فور تسجيل أي شخص من خلاله.
+                انسخ رابط الدعوة الخاص بك وشاركه عبر منصات التواصل الاجتماعي. 
+                ستحصل على مكافأة بقيمة <strong class="text-emerald-600 font-bold px-2 py-1 bg-emerald-50 rounded-lg">{% if user.is_upgraded %}0.2${% else %}0.05${% endif %}</strong> فور تسجيل أي مستخدم جديد من خلال رابطك.
             </p>
         </div>
         
@@ -184,15 +184,15 @@
                 <div class="space-y-4 mb-8 flex-1">
                     <div class="flex items-start">
                         <svg class="w-5 h-5 text-emerald-500 ml-3 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        <p class="text-slate-600 text-sm font-medium">مهمة واحدة فقط في اليوم</p>
+                        <p class="text-slate-600 text-sm font-medium">إمكانية إنجاز مهمة واحدة يومياً</p>
                     </div>
                     <div class="flex items-start">
                         <svg class="w-5 h-5 text-emerald-500 ml-3 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        <p class="text-slate-600 text-sm font-medium">أسعار الأرباح العادية (0.05$ للمهمة / 0.01$ للدعوة)</p>
+                        <p class="text-slate-600 text-sm font-medium">عوائد أساسية: (0.2$ لكل مهمة / 0.05$ لكل دعوة ناجحة)</p>
                     </div>
                     <div class="flex items-start">
                         <svg class="w-5 h-5 text-emerald-500 ml-3 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        <p class="text-slate-600 text-sm font-medium">سحب بطيء (يستغرق حتى 48 ساعة)</p>
+                        <p class="text-slate-600 text-sm font-medium">معالجة السحوبات خلال 48 ساعة كحد أقصى</p>
                     </div>
                 </div>
 
@@ -213,8 +213,6 @@
                 <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
                 <div class="absolute bottom-0 left-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none"></div>
                 
-                <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-400 via-purple-500 to-emerald-400"></div>
-
                 <div class="flex justify-between items-center mb-6 relative z-10">
                     <h3 class="text-xl font-bold text-purple-900">عضوية خاصة (VIP)</h3>
                     {% if user.is_upgraded %}
@@ -239,25 +237,25 @@
                         <div class="bg-emerald-100 rounded-full p-1 ml-3 shrink-0 mt-0.5">
                             <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                         </div>
-                        <p class="text-slate-700 text-sm font-medium">من <strong class="text-purple-700">3 إلى 10 مهام</strong> يومياً</p>
+                        <p class="text-slate-700 text-sm font-medium">إتاحة من <strong class="text-purple-700">3 إلى 10 مهام</strong> يومياً لزيادة الأرباح</p>
                     </div>
                     <div class="flex items-start">
                         <div class="bg-emerald-100 rounded-full p-1 ml-3 shrink-0 mt-0.5">
                             <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                         </div>
-                        <p class="text-slate-700 text-sm font-medium">أسعار مضاعفة 10x <strong class="text-purple-700">(0.5$ للمهمة / 0.1$ للدعوة)</strong></p>
+                        <p class="text-slate-700 text-sm font-medium">عوائد استثنائية: <strong class="text-purple-700">(1$ لكل مهمة / 0.2$ لكل دعوة ناجحة)</strong></p>
                     </div>
                     <div class="flex items-start">
                         <div class="bg-emerald-100 rounded-full p-1 ml-3 shrink-0 mt-0.5">
                             <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                         </div>
-                        <p class="text-slate-700 text-sm font-medium">سحب سريع جداً <strong class="text-emerald-600">(خلال 4 ساعات فقط)</strong></p>
+                        <p class="text-slate-700 text-sm font-medium">أولوية قصوى في معالجة السحوبات <strong class="text-emerald-600">(خلال 4 ساعات)</strong></p>
                     </div>
                     <div class="flex items-start">
                         <div class="bg-emerald-100 rounded-full p-1 ml-3 shrink-0 mt-0.5">
                             <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                         </div>
-                        <p class="text-slate-700 text-sm font-medium">أولوية في الدعم الفني</p>
+                        <p class="text-slate-700 text-sm font-medium">دعم فني مخصص على مدار الساعة</p>
                     </div>
                 </div>
 
