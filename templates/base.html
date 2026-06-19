@@ -15,37 +15,77 @@
 </head>
 <body class="text-slate-800">
 
-    <nav class="bg-white shadow-sm border-b border-slate-100">
+    <nav class="bg-white shadow-sm border-b border-slate-100 relative z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="{{ url_for('index') }}" class="text-2xl font-bold text-emerald-600">أرباحي</a>
+                    <a href="{{ url_for('index') }}" class="text-2xl font-bold text-purple-600 flex items-center">
+                        <svg class="w-8 h-8 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        أرباحي
+                    </a>
                 </div>
-                <div class="flex items-center space-x-4 space-x-reverse">
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-4 space-x-reverse">
                     {% if current_user.is_authenticated %}
                         {% if current_user.is_admin %}
-                            <a href="{{ url_for('admin_dashboard') }}" class="text-amber-600 font-bold hover:text-amber-700 transition">الإدارة</a>
+                            <a href="{{ url_for('admin_dashboard') }}" class="text-amber-600 font-bold hover:text-amber-700 transition px-3 py-2 rounded-lg hover:bg-amber-50">الإدارة</a>
                         {% endif %}
-                        <a href="{{ url_for('tasks') }}" class="text-slate-600 hover:text-emerald-600 transition">المهام</a>
-                        <a href="{{ url_for('dashboard') }}" class="text-slate-600 hover:text-emerald-600 transition">لوحة التحكم</a>
-                        <a href="{{ url_for('settings') }}" class="text-slate-600 hover:text-emerald-600 transition">الإعدادات</a>
-                        <a href="{{ url_for('logout') }}" class="bg-red-50 text-red-600 px-4 py-2 rounded-full hover:bg-red-100 transition text-sm font-medium">تسجيل الخروج</a>
+                        <a href="{{ url_for('tasks') }}" class="text-slate-600 hover:text-purple-600 font-medium transition px-3 py-2 rounded-lg hover:bg-purple-50">المهام</a>
+                        <a href="{{ url_for('dashboard') }}" class="text-slate-600 hover:text-purple-600 font-medium transition px-3 py-2 rounded-lg hover:bg-purple-50">لوحة التحكم</a>
+                        <a href="{{ url_for('settings') }}" class="text-slate-600 hover:text-purple-600 font-medium transition px-3 py-2 rounded-lg hover:bg-purple-50">الإعدادات</a>
+                        <a href="{{ url_for('logout') }}" class="bg-red-50 text-red-600 px-4 py-2 rounded-xl hover:bg-red-100 transition text-sm font-bold shadow-sm">تسجيل الخروج</a>
                     {% else %}
-                        <a href="{{ url_for('login') }}" class="text-slate-600 hover:text-emerald-600 transition">دخول</a>
-                        <a href="{{ url_for('register') }}" class="bg-emerald-600 text-white px-5 py-2 rounded-full hover:bg-emerald-700 transition shadow-sm font-medium">حساب جديد</a>
+                        <a href="{{ url_for('login') }}" class="text-slate-600 hover:text-purple-600 font-medium transition px-3 py-2">دخول</a>
+                        <a href="{{ url_for('register') }}" class="bg-purple-600 text-white px-5 py-2.5 rounded-xl hover:bg-purple-700 transition shadow-md font-bold">حساب جديد</a>
                     {% endif %}
                 </div>
+
+                <!-- Mobile menu button -->
+                <div class="flex items-center md:hidden">
+                    <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-purple-600 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500">
+                        <span class="sr-only">فتح القائمة</span>
+                        <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden bg-white border-b border-slate-100 shadow-lg absolute w-full" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="block px-3 py-2 rounded-md text-base font-bold text-amber-600 hover:bg-amber-50">الإدارة</a>
+                    {% endif %}
+                    <a href="{{ url_for('tasks') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-purple-600 hover:bg-purple-50">المهام</a>
+                    <a href="{{ url_for('dashboard') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-purple-600 hover:bg-purple-50">لوحة التحكم</a>
+                    <a href="{{ url_for('settings') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-purple-600 hover:bg-purple-50">الإعدادات</a>
+                    <a href="{{ url_for('logout') }}" class="block px-3 py-2 mt-4 rounded-md text-base font-bold text-red-600 bg-red-50 hover:bg-red-100 text-center">تسجيل الخروج</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-purple-600 hover:bg-purple-50">دخول</a>
+                    <a href="{{ url_for('register') }}" class="block px-3 py-2 mt-4 rounded-md text-base font-bold text-white bg-purple-600 hover:bg-purple-700 text-center">حساب جديد</a>
+                {% endif %}
             </div>
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="mb-6 space-y-2">
                     {% for category, message in messages %}
-                        <div class="p-4 rounded-lg {% if category == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200{% elif category == 'danger' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
-                            {{ message }}
+                        <div class="p-4 rounded-xl flex items-center {% if category == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200{% elif category == 'danger' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-purple-50 text-purple-800 border border-purple-200{% endif %}">
+                            {% if category == 'success' %}
+                                <svg class="w-5 h-5 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {% elif category == 'danger' %}
+                                <svg class="w-5 h-5 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {% else %}
+                                <svg class="w-5 h-5 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {% endif %}
+                            <span class="font-medium text-sm sm:text-base">{{ message }}</span>
                         </div>
                     {% endfor %}
                 </div>

@@ -1,52 +1,100 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto space-y-8">
+<div class="max-w-6xl mx-auto space-y-6 sm:space-y-8 px-2 sm:px-0">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100">
         <div>
-            <h1 class="text-3xl font-bold text-slate-900">مرحباً بك، {{ user.username }} 👋</h1>
-            <p class="mt-2 text-slate-500">لوحة التحكم الخاصة بك لمتابعة الإحالات والأرباح.</p>
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">مرحباً بك، {{ user.username }} 👋</h1>
+            <p class="mt-2 text-slate-500 text-sm sm:text-base">لوحة التحكم الخاصة بك لمتابعة المهام والإحالات والأرباح.</p>
         </div>
-        <div>
+        <div class="self-start sm:self-auto">
             {% if user.is_upgraded %}
-                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-amber-400 to-amber-600 text-white shadow-md">
-                    ⭐ حساب مطور (VIP)
+                <span class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-400 to-amber-600 text-white shadow-md">
+                    <svg class="w-4 h-4 ml-1.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    حساب مطور (VIP)
                 </span>
             {% else %}
-                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600">
-                    👤 حساب عادي
+                <span class="inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium bg-slate-100 text-slate-600">
+                    <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    حساب عادي
                 </span>
             {% endif %}
         </div>
     </div>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Balance Card -->
-        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden">
-            <div class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
-            <div class="relative z-10">
-                <p class="text-emerald-50 font-medium mb-1">الرصيد المتاح للسحب</p>
-                <h2 class="text-5xl font-extrabold">${{ "%.2f"|format(user.balance) }}</h2>
-                {% if user.auto_withdraw_threshold %}
-                <p class="mt-4 text-sm text-emerald-100 flex items-center">
-                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    سحب تلقائي عند بلوغ ${{ user.auto_withdraw_threshold }}
-                </p>
-                {% else %}
-                <p class="mt-4 text-sm text-emerald-100">لم تقم بتفعيل السحب التلقائي. <a href="{{ url_for('settings') }}" class="underline hover:text-white">تفعيل الآن</a></p>
-                {% endif %}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Balance Card (Keep Green for Money) -->
+        <div class="md:col-span-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden group">
+            <div class="absolute -right-10 -top-10 w-48 h-48 bg-white opacity-10 rounded-full blur-3xl group-hover:opacity-20 transition-opacity duration-500"></div>
+            <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-teal-900 opacity-20 rounded-full blur-2xl"></div>
+            
+            <div class="relative z-10 flex flex-col h-full justify-between">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <p class="text-emerald-50 font-medium text-lg">الرصيد المتاح للسحب</p>
+                        <div class="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                    </div>
+                    <h2 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">${{ "%.2f"|format(user.balance) }}</h2>
+                </div>
+                
+                <div class="mt-6 pt-6 border-t border-white/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    {% if user.auto_withdraw_threshold %}
+                    <p class="text-sm sm:text-base text-emerald-50 flex items-center bg-white/10 w-fit px-4 py-2 rounded-xl backdrop-blur-sm">
+                        <svg class="w-4 h-4 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        السحب التلقائي مفعل عند بلوغ {{ user.auto_withdraw_threshold }}$
+                    </p>
+                    {% else %}
+                    <p class="text-sm sm:text-base text-emerald-50 flex items-center bg-white/10 w-fit px-4 py-2 rounded-xl backdrop-blur-sm">
+                        <svg class="w-4 h-4 ml-2 shrink-0 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        السحب التلقائي غير مفعل.
+                    </p>
+                    {% endif %}
+                    <a href="{{ url_for('settings') }}" class="text-sm font-bold bg-white text-emerald-700 px-5 py-2.5 rounded-xl hover:bg-emerald-50 transition shadow-sm text-center">إعدادات السحب</a>
+                </div>
             </div>
         </div>
 
-        <!-- Referrals Card -->
-        <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 relative overflow-hidden">
-            <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-blue-50 opacity-50 rounded-full"></div>
-            <div class="relative z-10">
-                <p class="text-slate-500 font-medium mb-1">إجمالي الإحالات الناجحة</p>
-                <h2 class="text-5xl font-extrabold text-slate-900">{{ referrals_count }}</h2>
-                <p class="mt-4 text-sm text-slate-500">أشخاص سجلوا باستخدام رابطك</p>
+        <div class="grid grid-cols-1 gap-6">
+            <!-- Tasks Card (Purple Theme) -->
+            <div class="bg-gradient-to-br from-purple-600 to-fuchsia-700 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden group">
+                <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-white opacity-10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-purple-100 font-medium text-sm">المهام المنجزة</p>
+                        <div class="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline">
+                        <h2 class="text-4xl font-extrabold text-white">{{ completed_tasks_count }}</h2>
+                        <span class="text-purple-200 ml-1 mr-2 text-lg">/ {{ total_tasks }}</span>
+                    </div>
+                    <div class="mt-4 w-full bg-purple-900/40 rounded-full h-1.5 mb-4 overflow-hidden">
+                        <div class="bg-white h-1.5 rounded-full" style="width: {{ (completed_tasks_count / total_tasks * 100) if total_tasks > 0 else 0 }}%"></div>
+                    </div>
+                    <a href="{{ url_for('tasks') }}" class="text-sm text-white font-medium hover:text-purple-200 transition flex items-center">
+                        تصفح المهام <svg class="w-4 h-4 mr-1 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Referrals Card -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 relative overflow-hidden group">
+                <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-blue-50 opacity-50 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-slate-500 font-medium text-sm">الإحالات الناجحة</p>
+                        <div class="p-2 bg-blue-50 rounded-xl">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                    </div>
+                    <h2 class="text-4xl font-extrabold text-slate-900">{{ referrals_count }}</h2>
+                    <p class="mt-4 text-xs text-slate-500">أشخاص سجلوا باستخدام رابطك</p>
+                </div>
             </div>
         </div>
     </div>
@@ -54,52 +102,72 @@
     <!-- Referral Link & Upgrade -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Link Section -->
-        <div class="lg:col-span-2 bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-            <div class="flex items-center mb-4">
-                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center ml-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+        <div class="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100">
+            <div class="flex items-center mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center ml-4 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                 </div>
-                <h3 class="text-xl font-bold text-slate-900">رابط الإحالة الخاص بك</h3>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">رابط الدعوة الخاص بك</h3>
+                    <p class="text-slate-500 text-sm mt-1">شارك الرابط واربح المال</p>
+                </div>
             </div>
-            <p class="text-slate-600 mb-6 text-sm leading-relaxed">
-                قم بنسخ هذا الرابط ومشاركته مع أصدقائك أو متابعيك على انستغرام. 
-                ستحصل على <strong class="text-emerald-600">{% if user.is_upgraded %}0.1${% else %}0.01${% endif %}</strong> فور تسجيل أي شخص من خلاله.
-            </p>
             
-            <div class="flex flex-col sm:flex-row mt-1 rounded-xl shadow-sm">
-                <input type="text" readonly id="referral-link" value="{{ request.url_root }}register?ref={{ user.referral_code }}" class="flex-1 min-w-0 block w-full px-4 py-3 rounded-xl sm:rounded-l-none border border-slate-300 bg-slate-50 text-slate-600 focus:outline-none text-left mb-2 sm:mb-0" dir="ltr">
-                <button onclick="copyToClipboard()" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-bold rounded-xl sm:rounded-r-none text-white bg-slate-900 hover:bg-slate-800 transition">
+            <div class="bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-100 mb-6">
+                <p class="text-slate-700 text-sm leading-relaxed">
+                    قم بنسخ هذا الرابط ومشاركته مع أصدقائك أو متابعيك على انستغرام وغيرها من المنصات. 
+                    ستحصل على <strong class="text-emerald-600 font-bold px-2 py-1 bg-emerald-50 rounded-lg">{% if user.is_upgraded %}0.1${% else %}0.01${% endif %}</strong> فور تسجيل أي شخص من خلاله.
+                </p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                    <input type="text" readonly id="referral-link" value="{{ request.url_root }}register?ref={{ user.referral_code }}" class="block w-full px-4 py-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-left" dir="ltr">
+                </div>
+                <button onclick="copyToClipboard()" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-bold rounded-xl text-white bg-purple-600 hover:bg-purple-700 transition shadow-md hover:shadow-lg shrink-0">
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
                     نسخ الرابط
                 </button>
             </div>
-            <p id="copy-msg" class="text-emerald-600 text-sm mt-3 hidden font-medium">✨ تم نسخ الرابط بنجاح!</p>
+            <div id="copy-msg" class="hidden mt-4">
+                <div class="bg-emerald-50 text-emerald-700 px-4 py-3 rounded-xl flex items-center text-sm font-bold border border-emerald-100">
+                    <svg class="w-5 h-5 ml-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    تم نسخ الرابط بنجاح! يمكنك الآن لصقه ومشاركته.
+                </div>
+            </div>
         </div>
 
         <!-- Upgrade Section -->
-        <div class="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden flex flex-col justify-between shadow-xl">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-10 -mt-10"></div>
+        <div class="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden flex flex-col justify-between shadow-xl group">
+            <div class="absolute top-0 right-0 w-40 h-40 bg-amber-500 opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity duration-500"></div>
+            <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-purple-500 opacity-20 rounded-full blur-xl"></div>
             
-            {% if user.is_upgraded %}
-                <div class="text-center">
-                    <div class="text-5xl mb-4 mt-4">💎</div>
-                    <h3 class="text-xl font-bold mb-2">أنت من النخبة</h3>
-                    <p class="text-slate-400 text-sm">تستمتع الآن بأقصى معدل أرباح. استمر في مشاركة رابطك!</p>
-                </div>
-            {% else %}
-                <div>
-                    <h3 class="text-xl font-bold mb-3 flex items-center">
-                        <span class="mr-2">🚀</span> ترقية الحساب
-                    </h3>
-                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
-                        ضاعف أرباحك 10 مرات! احصل على 0.1$ لكل إحالة و 0.5$ لكل مهمة مقابل 10$ فقط.
-                    </p>
-                </div>
-                <form action="{{ url_for('upgrade') }}" method="POST">
-                    <button type="submit" class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-bold rounded-xl text-slate-900 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 transition shadow-lg transform hover:-translate-y-0.5">
-                        ترقية الآن (10$)
-                    </button>
-                </form>
-            {% endif %}
+            <div class="relative z-10 h-full flex flex-col">
+                {% if user.is_upgraded %}
+                    <div class="text-center flex-1 flex flex-col justify-center items-center">
+                        <div class="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center mb-6">
+                            <span class="text-5xl drop-shadow-lg">💎</span>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 text-white">أنت من النخبة</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">تستمتع الآن بأقصى معدل أرباح. ضاعفنا أرباحك في الإحالات والمهام!</p>
+                    </div>
+                {% else %}
+                    <div class="flex-1">
+                        <div class="w-14 h-14 bg-amber-500/20 rounded-2xl flex items-center justify-center mb-6">
+                            <span class="text-3xl drop-shadow-lg">🚀</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-white">ترقية حسابك لـ VIP</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-6">
+                            ضاعف أرباحك 10 مرات! احصل على <strong class="text-amber-400">0.1$</strong> لكل إحالة و <strong class="text-amber-400">0.5$</strong> لكل مهمة مقابل 10$ فقط لمرة واحدة.
+                        </p>
+                    </div>
+                    <form action="{{ url_for('upgrade') }}" method="POST" class="mt-auto">
+                        <button type="submit" class="w-full flex items-center justify-center px-4 py-4 border border-transparent text-base font-bold rounded-xl text-slate-900 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                            ترقية الآن مقابل 10$
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

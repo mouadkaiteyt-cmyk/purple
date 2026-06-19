@@ -27,6 +27,7 @@ class User(UserMixin, db.Model):
     referral_code = db.Column(db.String(20), unique=True, nullable=False)
     referred_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     ccp_account = db.Column(db.String(50), nullable=True)
+    ccp_last_changed = db.Column(db.DateTime, nullable=True)
     auto_withdraw_threshold = db.Column(db.Integer, nullable=True)
     instagram_username = db.Column(db.String(50), nullable=True)
     instagram_last_changed = db.Column(db.DateTime, nullable=True)
@@ -153,7 +154,20 @@ def logout():
 @login_required
 def dashboard():
     referrals_count = User.query.filter_by(referred_by=current_user.id).count()
-    return render_template('dashboard.html', user=current_user, referrals_count=referrals_count)
+    all_tasks = Task.query.all()
+    completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
+    
+    # Calculate tasks stats
+    total_tasks = len(all_tasks)
+    completed_tasks_count = len(completed_task_ids)
+    
+    return render_template('dashboard.html', 
+                           user=current_user, 
+                           referrals_count=referrals_count,
+                           tasks=all_tasks,
+                           completed_task_ids=completed_task_ids,
+                           total_tasks=total_tasks,
+                           completed_tasks_count=completed_tasks_count)
 
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
@@ -163,15 +177,32 @@ def settings():
         threshold = request.form.get('auto_withdraw_threshold')
         instagram = request.form.get('instagram_username')
 
-        current_user.ccp_account = ccp_account
+        now = datetime.utcnow()
         
+        # CCP Account Logic (60 days rule)
+        if ccp_account and ccp_account != current_user.ccp_account:
+            if current_user.ccp_last_changed:
+                days_since_ccp = (now - current_user.ccp_last_changed).days
+                if days_since_ccp < 60:
+                    flash(f'لا يمكنك تغيير حساب CCP الآن. يرجى الانتظار {60 - days_since_ccp} يوماً.', 'danger')
+                else:
+                    current_user.ccp_account = ccp_account
+                    current_user.ccp_last_changed = now
+            else:
+                current_user.ccp_account = ccp_account
+                current_user.ccp_last_changed = now
+        elif not ccp_account:
+            pass
+        
+        # Auto withdraw threshold
         if threshold and threshold in ['40', '80', '120']:
             current_user.auto_withdraw_threshold = int(threshold)
         else:
+            # Default or disabled if not provided
             current_user.auto_withdraw_threshold = None
 
+        # Instagram Logic (60 days rule)
         if instagram and instagram != current_user.instagram_username:
-            now = datetime.utcnow()
             if current_user.instagram_last_changed:
                 days_since = (now - current_user.instagram_last_changed).days
                 if days_since < 60:
@@ -179,29 +210,41 @@ def settings():
                 else:
                     current_user.instagram_username = instagram
                     current_user.instagram_last_changed = now
-                    flash('تم تحديث حساب انستغرام بنجاح.', 'success')
             else:
                 current_user.instagram_username = instagram
                 current_user.instagram_last_changed = now
-                flash('تم تحديث حساب انستغرام بنجاح.', 'success')
         elif not instagram:
             pass
 
         db.session.commit()
-        # Only flash general success if there was no danger flash about Instagram
         if not get_flashed_messages(category_filter=['danger']):
             flash('تم حفظ الإعدادات بنجاح.', 'success')
         return redirect(url_for('settings'))
 
+    # Calculate remaining days for Instagram
     can_change_ig = True
-    days_remaining = 0
+    ig_days_remaining = 0
     if current_user.instagram_last_changed:
         days_since = (datetime.utcnow() - current_user.instagram_last_changed).days
         if days_since < 60:
             can_change_ig = False
-            days_remaining = 60 - days_since
+            ig_days_remaining = 60 - days_since
 
-    return render_template('settings.html', user=current_user, can_change_ig=can_change_ig, days_remaining=days_remaining)
+    # Calculate remaining days for CCP
+    can_change_ccp = True
+    ccp_days_remaining = 0
+    if current_user.ccp_last_changed:
+        days_since_ccp = (datetime.utcnow() - current_user.ccp_last_changed).days
+        if days_since_ccp < 60:
+            can_change_ccp = False
+            ccp_days_remaining = 60 - days_since_ccp
+
+    return render_template('settings.html', 
+                           user=current_user, 
+                           can_change_ig=can_change_ig, 
+                           ig_days_remaining=ig_days_remaining,
+                           can_change_ccp=can_change_ccp,
+                           ccp_days_remaining=ccp_days_remaining)
 
 @app.route('/upgrade', methods=['POST'])
 @login_required
