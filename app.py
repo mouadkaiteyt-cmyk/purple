@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime, timedelta
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from flask_sqlalchemy import SQLAlchemy
@@ -25,6 +26,10 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     referral_code = db.Column(db.String(20), unique=True, nullable=False)
     referred_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    ccp_account = db.Column(db.String(50), nullable=True)
+    auto_withdraw_threshold = db.Column(db.Integer, nullable=True)
+    instagram_username = db.Column(db.String(50), nullable=True)
+    instagram_last_changed = db.Column(db.DateTime, nullable=True)
 
     referrals = db.relationship('User', backref=db.backref('referrer', remote_side=[id]))
 
@@ -149,6 +154,54 @@ def logout():
 def dashboard():
     referrals_count = User.query.filter_by(referred_by=current_user.id).count()
     return render_template('dashboard.html', user=current_user, referrals_count=referrals_count)
+
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    if request.method == 'POST':
+        ccp_account = request.form.get('ccp_account')
+        threshold = request.form.get('auto_withdraw_threshold')
+        instagram = request.form.get('instagram_username')
+
+        current_user.ccp_account = ccp_account
+        
+        if threshold and threshold in ['40', '80', '120']:
+            current_user.auto_withdraw_threshold = int(threshold)
+        else:
+            current_user.auto_withdraw_threshold = None
+
+        if instagram and instagram != current_user.instagram_username:
+            now = datetime.utcnow()
+            if current_user.instagram_last_changed:
+                days_since = (now - current_user.instagram_last_changed).days
+                if days_since < 60:
+                    flash(f'لا يمكنك تغيير حساب انستغرام الآن. يرجى الانتظار {60 - days_since} يوماً.', 'danger')
+                else:
+                    current_user.instagram_username = instagram
+                    current_user.instagram_last_changed = now
+                    flash('تم تحديث حساب انستغرام بنجاح.', 'success')
+            else:
+                current_user.instagram_username = instagram
+                current_user.instagram_last_changed = now
+                flash('تم تحديث حساب انستغرام بنجاح.', 'success')
+        elif not instagram:
+            pass
+
+        db.session.commit()
+        # Only flash general success if there was no danger flash about Instagram
+        if not get_flashed_messages(category_filter=['danger']):
+            flash('تم حفظ الإعدادات بنجاح.', 'success')
+        return redirect(url_for('settings'))
+
+    can_change_ig = True
+    days_remaining = 0
+    if current_user.instagram_last_changed:
+        days_since = (datetime.utcnow() - current_user.instagram_last_changed).days
+        if days_since < 60:
+            can_change_ig = False
+            days_remaining = 60 - days_since
+
+    return render_template('settings.html', user=current_user, can_change_ig=can_change_ig, days_remaining=days_remaining)
 
 @app.route('/upgrade', methods=['POST'])
 @login_required

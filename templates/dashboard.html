@@ -1,75 +1,101 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto">
-    <div class="mb-8 flex items-center justify-between">
+<div class="max-w-5xl mx-auto space-y-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
         <div>
-            <h1 class="text-3xl font-bold text-slate-900">مرحباً، {{ user.username }} 👋</h1>
-            <p class="mt-2 text-slate-600">هنا يمكنك متابعة أرباحك وإحالاتك.</p>
+            <h1 class="text-3xl font-bold text-slate-900">مرحباً بك، {{ user.username }} 👋</h1>
+            <p class="mt-2 text-slate-500">لوحة التحكم الخاصة بك لمتابعة الإحالات والأرباح.</p>
         </div>
         <div>
             {% if user.is_upgraded %}
-                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-amber-400 to-yellow-500 text-white shadow-sm">
-                    ⭐ حساب مطور
+                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-amber-400 to-amber-600 text-white shadow-md">
+                    ⭐ حساب مطور (VIP)
                 </span>
             {% else %}
                 <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600">
-                    حساب عادي
+                    👤 حساب عادي
                 </span>
             {% endif %}
         </div>
     </div>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Balance Card -->
-        <div class="bg-white overflow-hidden shadow-lg rounded-3xl p-6 border border-slate-100 relative">
-            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-emerald-100 rounded-full opacity-50"></div>
+        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
             <div class="relative z-10">
-                <dt class="text-sm font-medium text-slate-500 truncate">الرصيد المتاح</dt>
-                <dd class="mt-2 text-4xl font-extrabold text-slate-900">${{ "%.2f"|format(user.balance) }}</dd>
+                <p class="text-emerald-50 font-medium mb-1">الرصيد المتاح للسحب</p>
+                <h2 class="text-5xl font-extrabold">${{ "%.2f"|format(user.balance) }}</h2>
+                {% if user.auto_withdraw_threshold %}
+                <p class="mt-4 text-sm text-emerald-100 flex items-center">
+                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    سحب تلقائي عند بلوغ ${{ user.auto_withdraw_threshold }}
+                </p>
+                {% else %}
+                <p class="mt-4 text-sm text-emerald-100">لم تقم بتفعيل السحب التلقائي. <a href="{{ url_for('settings') }}" class="underline hover:text-white">تفعيل الآن</a></p>
+                {% endif %}
             </div>
         </div>
 
         <!-- Referrals Card -->
-        <div class="bg-white overflow-hidden shadow-lg rounded-3xl p-6 border border-slate-100 relative">
-            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-blue-100 rounded-full opacity-50"></div>
+        <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 relative overflow-hidden">
+            <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-blue-50 opacity-50 rounded-full"></div>
             <div class="relative z-10">
-                <dt class="text-sm font-medium text-slate-500 truncate">عدد الإحالات</dt>
-                <dd class="mt-2 text-4xl font-extrabold text-slate-900">{{ referrals_count }}</dd>
+                <p class="text-slate-500 font-medium mb-1">إجمالي الإحالات الناجحة</p>
+                <h2 class="text-5xl font-extrabold text-slate-900">{{ referrals_count }}</h2>
+                <p class="mt-4 text-sm text-slate-500">أشخاص سجلوا باستخدام رابطك</p>
             </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Referral Link Section -->
-        <div class="lg:col-span-2 bg-white shadow-lg rounded-3xl p-8 border border-slate-100">
-            <h3 class="text-xl font-bold text-slate-900 mb-4">رابط الإحالة الخاص بك</h3>
-            <p class="text-slate-600 mb-6">شارك هذا الرابط مع أصدقائك. ستحصل على {% if user.is_upgraded %}0.1${% else %}0.01${% endif %} لكل شخص يسجل من خلاله.</p>
+    <!-- Referral Link & Upgrade -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Link Section -->
+        <div class="lg:col-span-2 bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+            <div class="flex items-center mb-4">
+                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center ml-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900">رابط الإحالة الخاص بك</h3>
+            </div>
+            <p class="text-slate-600 mb-6 text-sm leading-relaxed">
+                قم بنسخ هذا الرابط ومشاركته مع أصدقائك أو متابعيك على انستغرام. 
+                ستحصل على <strong class="text-emerald-600">{% if user.is_upgraded %}0.1${% else %}0.01${% endif %}</strong> فور تسجيل أي شخص من خلاله.
+            </p>
             
-            <div class="flex mt-1 rounded-xl shadow-sm">
-                <input type="text" readonly id="referral-link" value="{{ request.url_root }}register?ref={{ user.referral_code }}" class="flex-1 min-w-0 block w-full px-4 py-3 rounded-none rounded-r-xl border border-slate-300 bg-slate-50 text-slate-600 focus:outline-none sm:text-sm text-left" dir="ltr">
-                <button onclick="copyToClipboard()" class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-l-xl text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition">
+            <div class="flex flex-col sm:flex-row mt-1 rounded-xl shadow-sm">
+                <input type="text" readonly id="referral-link" value="{{ request.url_root }}register?ref={{ user.referral_code }}" class="flex-1 min-w-0 block w-full px-4 py-3 rounded-xl sm:rounded-l-none border border-slate-300 bg-slate-50 text-slate-600 focus:outline-none text-left mb-2 sm:mb-0" dir="ltr">
+                <button onclick="copyToClipboard()" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-bold rounded-xl sm:rounded-r-none text-white bg-slate-900 hover:bg-slate-800 transition">
                     نسخ الرابط
                 </button>
             </div>
-            <p id="copy-msg" class="text-emerald-600 text-sm mt-2 hidden">تم نسخ الرابط بنجاح!</p>
+            <p id="copy-msg" class="text-emerald-600 text-sm mt-3 hidden font-medium">✨ تم نسخ الرابط بنجاح!</p>
         </div>
 
         <!-- Upgrade Section -->
-        <div class="bg-gradient-to-br from-slate-900 to-slate-800 shadow-lg rounded-3xl p-8 text-white relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-32 h-32 bg-white opacity-5 rounded-full -ml-10 -mt-10"></div>
-            <h3 class="text-xl font-bold mb-4 relative z-10">ترقية الحساب</h3>
+        <div class="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden flex flex-col justify-between shadow-xl">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-10 -mt-10"></div>
             
             {% if user.is_upgraded %}
-                <div class="flex flex-col items-center justify-center h-full pb-8">
-                    <div class="text-4xl mb-4">🎉</div>
-                    <p class="text-center text-slate-300">أنت تستمتع الآن بأقصى أرباح ممكنة (0.1$ لكل إحالة).</p>
+                <div class="text-center">
+                    <div class="text-5xl mb-4 mt-4">💎</div>
+                    <h3 class="text-xl font-bold mb-2">أنت من النخبة</h3>
+                    <p class="text-slate-400 text-sm">تستمتع الآن بأقصى معدل أرباح. استمر في مشاركة رابطك!</p>
                 </div>
             {% else %}
-                <p class="text-slate-300 mb-6 text-sm relative z-10">قم بالترقية الآن بـ 10$ فقط وضاعف أرباحك 10 مرات! ستحصل على 0.1$ بدلاً من 0.01$ لكل إحالة.</p>
-                <form action="{{ url_for('upgrade') }}" method="POST" class="relative z-10">
-                    <button type="submit" class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-xl text-slate-900 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition shadow-lg transform hover:-translate-y-0.5">
+                <div>
+                    <h3 class="text-xl font-bold mb-3 flex items-center">
+                        <span class="mr-2">🚀</span> ترقية الحساب
+                    </h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        ضاعف أرباحك 10 مرات! احصل على 0.1$ لكل إحالة و 0.5$ لكل مهمة مقابل 10$ فقط.
+                    </p>
+                </div>
+                <form action="{{ url_for('upgrade') }}" method="POST">
+                    <button type="submit" class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-bold rounded-xl text-slate-900 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 transition shadow-lg transform hover:-translate-y-0.5">
                         ترقية الآن (10$)
                     </button>
                 </form>
@@ -82,7 +108,7 @@
 function copyToClipboard() {
     var copyText = document.getElementById("referral-link");
     copyText.select();
-    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+    copyText.setSelectionRange(0, 99999);
     navigator.clipboard.writeText(copyText.value).then(function() {
         var msg = document.getElementById("copy-msg");
         msg.classList.remove("hidden");
