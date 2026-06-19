@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900">مرحباً، {{ user.username }} 👋</h1>
+            <p class="mt-2 text-slate-600">هنا يمكنك متابعة أرباحك وإحالاتك.</p>
+        </div>
+        <div>
+            {% if user.is_upgraded %}
+                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-amber-400 to-yellow-500 text-white shadow-sm">
+                    ⭐ حساب مطور
+                </span>
+            {% else %}
+                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-slate-100 text-slate-600">
+                    حساب عادي
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 mb-8">
+        <!-- Balance Card -->
+        <div class="bg-white overflow-hidden shadow-lg rounded-3xl p-6 border border-slate-100 relative">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-emerald-100 rounded-full opacity-50"></div>
+            <div class="relative z-10">
+                <dt class="text-sm font-medium text-slate-500 truncate">الرصيد المتاح</dt>
+                <dd class="mt-2 text-4xl font-extrabold text-slate-900">${{ "%.2f"|format(user.balance) }}</dd>
+            </div>
+        </div>
+
+        <!-- Referrals Card -->
+        <div class="bg-white overflow-hidden shadow-lg rounded-3xl p-6 border border-slate-100 relative">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-blue-100 rounded-full opacity-50"></div>
+            <div class="relative z-10">
+                <dt class="text-sm font-medium text-slate-500 truncate">عدد الإحالات</dt>
+                <dd class="mt-2 text-4xl font-extrabold text-slate-900">{{ referrals_count }}</dd>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Referral Link Section -->
+        <div class="lg:col-span-2 bg-white shadow-lg rounded-3xl p-8 border border-slate-100">
+            <h3 class="text-xl font-bold text-slate-900 mb-4">رابط الإحالة الخاص بك</h3>
+            <p class="text-slate-600 mb-6">شارك هذا الرابط مع أصدقائك. ستحصل على {% if user.is_upgraded %}0.1${% else %}0.01${% endif %} لكل شخص يسجل من خلاله.</p>
+            
+            <div class="flex mt-1 rounded-xl shadow-sm">
+                <input type="text" readonly id="referral-link" value="{{ request.url_root }}register?ref={{ user.referral_code }}" class="flex-1 min-w-0 block w-full px-4 py-3 rounded-none rounded-r-xl border border-slate-300 bg-slate-50 text-slate-600 focus:outline-none sm:text-sm text-left" dir="ltr">
+                <button onclick="copyToClipboard()" class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-l-xl text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition">
+                    نسخ الرابط
+                </button>
+            </div>
+            <p id="copy-msg" class="text-emerald-600 text-sm mt-2 hidden">تم نسخ الرابط بنجاح!</p>
+        </div>
+
+        <!-- Upgrade Section -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 shadow-lg rounded-3xl p-8 text-white relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-32 h-32 bg-white opacity-5 rounded-full -ml-10 -mt-10"></div>
+            <h3 class="text-xl font-bold mb-4 relative z-10">ترقية الحساب</h3>
+            
+            {% if user.is_upgraded %}
+                <div class="flex flex-col items-center justify-center h-full pb-8">
+                    <div class="text-4xl mb-4">🎉</div>
+                    <p class="text-center text-slate-300">أنت تستمتع الآن بأقصى أرباح ممكنة (0.1$ لكل إحالة).</p>
+                </div>
+            {% else %}
+                <p class="text-slate-300 mb-6 text-sm relative z-10">قم بالترقية الآن بـ 10$ فقط وضاعف أرباحك 10 مرات! ستحصل على 0.1$ بدلاً من 0.01$ لكل إحالة.</p>
+                <form action="{{ url_for('upgrade') }}" method="POST" class="relative z-10">
+                    <button type="submit" class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-xl text-slate-900 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition shadow-lg transform hover:-translate-y-0.5">
+                        ترقية الآن (10$)
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard() {
+    var copyText = document.getElementById("referral-link");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+    navigator.clipboard.writeText(copyText.value).then(function() {
+        var msg = document.getElementById("copy-msg");
+        msg.classList.remove("hidden");
+        setTimeout(function() {
+            msg.classList.add("hidden");
+        }, 3000);
+    });
+}
+</script>
+{% endblock %}

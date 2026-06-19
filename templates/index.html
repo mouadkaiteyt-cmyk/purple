@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="relative bg-white overflow-hidden rounded-3xl shadow-xl">
+    <div class="max-w-7xl mx-auto">
+        <div class="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32 pt-10 px-4 sm:px-6 lg:px-8">
+            <main class="mt-10 mx-auto max-w-7xl sm:mt-12 md:mt-16 lg:mt-20 xl:mt-28">
+                <div class="sm:text-center lg:text-right">
+                    <h1 class="text-4xl tracking-tight font-extrabold text-slate-900 sm:text-5xl md:text-6xl">
+                        <span class="block xl:inline">اربح من دعوة</span>
+                        <span class="block text-emerald-600 xl:inline">أصدقائك بسهولة</span>
+                    </h1>
+                    <p class="mt-3 text-base text-slate-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
+                        سجل مجاناً الآن وابدأ في كسب 0.01 دولار على كل شخص يسجل من خلال رابط الإحالة الخاص بك. يمكنك أيضاً ترقية حسابك لزيادة أرباحك إلى 0.1 دولار لكل إحالة!
+                    </p>
+                    <div class="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
+                        <div class="rounded-md shadow">
+                            <a href="{{ url_for('register') }}" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-emerald-600 hover:bg-emerald-700 md:py-4 md:text-lg transition">
+                                ابدأ الآن مجاناً
+                            </a>
+                        </div>
+                        <div class="mt-3 sm:mt-0 sm:mr-3">
+                            <a href="{{ url_for('login') }}" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-emerald-700 bg-emerald-100 hover:bg-emerald-200 md:py-4 md:text-lg transition">
+                                تسجيل الدخول
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <div class="lg:absolute lg:inset-y-0 lg:left-0 lg:w-1/2 bg-emerald-50 hidden lg:block">
+        <div class="h-full flex items-center justify-center p-12">
+            <div class="grid grid-cols-2 gap-6 w-full">
+                <div class="bg-white p-6 rounded-2xl shadow-lg transform rotate-3 hover:rotate-0 transition duration-300">
+                    <div class="text-emerald-500 text-3xl mb-4">💰</div>
+                    <h3 class="font-bold text-lg mb-2">عضوية مجانية</h3>
+                    <p class="text-slate-600 text-sm">اربح 0.01$ عن كل إحالة ناجحة تسجل عبر رابطك.</p>
+                </div>
+                <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-6 rounded-2xl shadow-lg transform -rotate-3 hover:rotate-0 transition duration-300 mt-12">
+                    <div class="text-white text-3xl mb-4">🚀</div>
+                    <h3 class="font-bold text-lg mb-2">عضوية المطور</h3>
+                    <p class="text-emerald-50 text-sm">قم بالترقية واربح 0.1$ عن كل إحالة! ضاعف أرباحك 10 مرات.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
