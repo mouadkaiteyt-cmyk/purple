@@ -77,6 +77,7 @@ class AppConfig(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     normal_daily_limit = db.Column(db.Integer, default=1)
     upgraded_daily_limit = db.Column(db.Integer, default=3)
+    telegram_agent_link = db.Column(db.String(200), default='https://t.me/YourAgent')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -129,6 +130,10 @@ with app.app_context():
                 db.session.execute(text('ALTER TABLE completed_task ADD COLUMN completed_at TIMESTAMP'))
                 # Update existing records to current time so they don't have NULL
                 db.session.execute(text("UPDATE completed_task SET completed_at = CURRENT_TIMESTAMP WHERE completed_at IS NULL"))
+        if 'app_config' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('app_config')]
+            if 'telegram_agent_link' not in columns:
+                db.session.execute(text("ALTER TABLE app_config ADD COLUMN telegram_agent_link VARCHAR(200) DEFAULT 'https://t.me/YourAgent'"))
         db.session.commit()
     except Exception as e:
         print(f"Migration error: {e}")
@@ -364,6 +369,15 @@ def settings():
                            can_change_ccp=can_change_ccp,
                            ccp_days_remaining=ccp_days_remaining)
 
+@app.route('/upgrade_instructions/<plan>')
+@login_required
+def upgrade_instructions(plan):
+    if plan not in ['vip_10_days', 'vip_lifetime']:
+        abort(400)
+    
+    config = AppConfig.query.first()
+    return render_template('agent_upgrade.html', plan=plan, telegram_link=config.telegram_agent_link)
+
 @app.route('/upgrade/<plan>', methods=['POST'])
 @login_required
 def upgrade(plan):
@@ -477,8 +491,17 @@ def complete_task(task_id):
 @app.route('/admin')
 @admin_required
 def admin_dashboard():
-    users = User.query.all()
+    search_query = request.args.get('q', '')
+    if search_query:
+        users = User.query.filter(User.username.ilike(f'%{search_query}%') | User.email.ilike(f'%{search_query}%')).all()
+    else:
+        users = User.query.all()
+        
     tasks = Task.query.all()
+    # Add stats to tasks
+    for task in tasks:
+        task.completions_count = CompletedTask.query.filter_by(task_id=task.id).count()
+        
     config = AppConfig.query.first()
     
     # Withdrawal Requests
@@ -532,12 +555,17 @@ def admin_update_config():
     config = AppConfig.query.first()
     normal_limit = request.form.get('normal_daily_limit')
     upgraded_limit = request.form.get('upgraded_daily_limit')
+    telegram_agent_link = request.form.get('telegram_agent_link')
     
     if normal_limit and upgraded_limit:
         config.normal_daily_limit = int(normal_limit)
         config.upgraded_daily_limit = int(upgraded_limit)
-        db.session.commit()
-        flash('تم تحديث إعدادات المهام اليومية بنجاح.', 'success')
+        
+    if telegram_agent_link:
+        config.telegram_agent_link = telegram_agent_link
+        
+    db.session.commit()
+    flash('تم تحديث الإعدادات بنجاح.', 'success')
         
     return redirect(url_for('admin_dashboard'))
 
