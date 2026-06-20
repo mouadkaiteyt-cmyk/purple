@@ -199,8 +199,13 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 {% if u.is_admin %}
                                     <span class="px-2.5 py-1 inline-flex text-xs font-bold rounded-lg bg-slate-900 text-white">إدارة</span>
-                                {% elif u.is_upgraded %}
-                                    <span class="px-2.5 py-1 inline-flex text-xs font-bold rounded-lg bg-purple-100 text-purple-700">VIP</span>
+                                {% elif u.membership_type == 'vip_lifetime' %}
+                                    <span class="px-2.5 py-1 inline-flex text-xs font-bold rounded-lg bg-purple-100 text-purple-700">VIP (مدى الحياة)</span>
+                                {% elif u.membership_type == 'vip_10_days' %}
+                                    <span class="px-2.5 py-1 inline-flex text-xs font-bold rounded-lg bg-blue-100 text-blue-700">VIP (10 أيام)</span>
+                                    {% if u.membership_expires_at %}
+                                        <div class="text-[10px] text-slate-500 mt-1">ينتهي: {{ u.membership_expires_at.strftime('%Y-%m-%d') }}</div>
+                                    {% endif %}
                                 {% else %}
                                     <span class="px-2.5 py-1 inline-flex text-xs font-bold rounded-lg bg-slate-100 text-slate-600">عادي</span>
                                 {% endif %}

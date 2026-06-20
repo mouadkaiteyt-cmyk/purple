@@ -34,8 +34,19 @@ class User(UserMixin, db.Model):
     instagram_last_changed = db.Column(db.DateTime, nullable=True)
     tiktok_username = db.Column(db.String(50), nullable=True)
     tiktok_last_changed = db.Column(db.DateTime, nullable=True)
+    membership_type = db.Column(db.String(20), default='free') # free, vip_10_days, vip_lifetime
+    membership_expires_at = db.Column(db.DateTime, nullable=True)
 
     referrals = db.relationship('User', backref=db.backref('referrer', remote_side=[id]))
+
+    @property
+    def is_upgraded(self):
+        if self.membership_type == 'vip_lifetime':
+            return True
+        if self.membership_type == 'vip_10_days':
+            if self.membership_expires_at and self.membership_expires_at > datetime.utcnow():
+                return True
+        return False
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -103,6 +114,11 @@ with app.app_context():
                 db.session.execute(text('ALTER TABLE "user" ADD COLUMN tiktok_username VARCHAR(50)'))
             if 'tiktok_last_changed' not in columns:
                 db.session.execute(text('ALTER TABLE "user" ADD COLUMN tiktok_last_changed TIMESTAMP'))
+            if 'membership_type' not in columns:
+                db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN membership_type VARCHAR(20) DEFAULT 'free'"))
+                db.session.execute(text("UPDATE \"user\" SET membership_type = 'vip_lifetime' WHERE is_upgraded = 1"))
+            if 'membership_expires_at' not in columns:
+                db.session.execute(text('ALTER TABLE "user" ADD COLUMN membership_expires_at TIMESTAMP'))
         if 'task' in inspector.get_table_names():
             columns = [col['name'] for col in inspector.get_columns('task')]
             if 'link' not in columns:
@@ -132,6 +148,7 @@ with app.app_context():
             password_hash=generate_password_hash('admin123'),
             is_admin=True,
             is_upgraded=True,
+            membership_type='vip_lifetime',
             referral_code=str(uuid.uuid4())[:8]
         )
         db.session.add(admin_user)
@@ -230,6 +247,8 @@ def dashboard():
     total_tasks = len(all_tasks)
     completed_tasks_count = len(completed_task_ids)
     
+    config = AppConfig.query.first()
+    
     return render_template('dashboard.html', 
                            user=current_user, 
                            referrals_count=referrals_count,
@@ -238,7 +257,8 @@ def dashboard():
                            tasks=all_tasks,
                            completed_task_ids=completed_task_ids,
                            total_tasks=total_tasks,
-                           completed_tasks_count=completed_tasks_count)
+                           completed_tasks_count=completed_tasks_count,
+                           config=config)
 
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
@@ -344,16 +364,38 @@ def settings():
                            can_change_ccp=can_change_ccp,
                            ccp_days_remaining=ccp_days_remaining)
 
-@app.route('/upgrade', methods=['POST'])
+@app.route('/upgrade/<plan>', methods=['POST'])
 @login_required
-def upgrade():
-    if current_user.is_upgraded:
-        flash('حسابك مطور بالفعل.', 'info')
+def upgrade(plan):
+    if current_user.membership_type == 'vip_lifetime':
+        flash('حسابك مطور مدى الحياة بالفعل.', 'info')
         return redirect(url_for('dashboard'))
+        
+    if plan == 'vip_10_days':
+        price = 10.0
+    elif plan == 'vip_lifetime':
+        price = 40.0
+    else:
+        abort(400)
+        
+    if current_user.balance < price:
+        flash(f'رصيدك غير كافٍ للترقية. تحتاج إلى {price}$', 'danger')
+        return redirect(url_for('dashboard'))
+        
+    # Deduct balance
+    current_user.balance -= price
     
-    current_user.is_upgraded = True
+    current_user.membership_type = plan
+    if plan == 'vip_10_days':
+        if current_user.membership_expires_at and current_user.membership_expires_at > datetime.utcnow():
+            current_user.membership_expires_at += timedelta(days=10)
+        else:
+            current_user.membership_expires_at = datetime.utcnow() + timedelta(days=10)
+    else:
+        current_user.membership_expires_at = None
+        
     db.session.commit()
-    flash('تم ترقية حسابك بنجاح! ستحصل الآن على 0.2 دولار لكل إحالة و 1 دولار للمهمة.', 'success')
+    flash('تم ترقية حسابك بنجاح!', 'success')
     return redirect(url_for('dashboard'))
 
 @app.route('/tasks')
