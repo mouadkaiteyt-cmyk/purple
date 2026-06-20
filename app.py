@@ -49,6 +49,12 @@ class CompletedTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    completed_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class AppConfig(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    normal_daily_limit = db.Column(db.Integer, default=1)
+    upgraded_daily_limit = db.Column(db.Integer, default=3)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -78,10 +84,22 @@ with app.app_context():
             columns = [col['name'] for col in inspector.get_columns('task')]
             if 'link' not in columns:
                 db.session.execute(text('ALTER TABLE task ADD COLUMN link VARCHAR(500)'))
+        if 'completed_task' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('completed_task')]
+            if 'completed_at' not in columns:
+                db.session.execute(text('ALTER TABLE completed_task ADD COLUMN completed_at TIMESTAMP'))
+                # Update existing records to current time so they don't have NULL
+                db.session.execute(text("UPDATE completed_task SET completed_at = CURRENT_TIMESTAMP WHERE completed_at IS NULL"))
         db.session.commit()
     except Exception as e:
         print(f"Migration error: {e}")
         db.session.rollback()
+
+    # Create an AppConfig automatically if none exists
+    if not AppConfig.query.first():
+        config = AppConfig(normal_daily_limit=1, upgraded_daily_limit=3)
+        db.session.add(config)
+        db.session.commit()
 
     # Create an admin user automatically if none exists
     if not User.query.filter_by(is_admin=True).first():
@@ -318,13 +336,50 @@ def upgrade():
 @app.route('/tasks')
 @login_required
 def tasks():
-    all_tasks = Task.query.all()
     completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
-    return render_template('tasks.html', tasks=all_tasks, completed_task_ids=completed_task_ids)
+    
+    # Get recent completions in last 24 hours
+    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
+    recent_completions = CompletedTask.query.filter(
+        CompletedTask.user_id == current_user.id,
+        CompletedTask.completed_at >= twenty_four_hours_ago
+    ).count()
+    
+    config = AppConfig.query.first()
+    limit = config.upgraded_daily_limit if current_user.is_upgraded else config.normal_daily_limit
+    available_slots = max(0, limit - recent_completions)
+    
+    if completed_task_ids:
+        uncompleted_tasks = Task.query.filter(~Task.id.in_(completed_task_ids)).order_by(Task.id).limit(available_slots).all()
+        completed_tasks = Task.query.filter(Task.id.in_(completed_task_ids)).all()
+    else:
+        uncompleted_tasks = Task.query.order_by(Task.id).limit(available_slots).all()
+        completed_tasks = []
+        
+    all_tasks_to_show = uncompleted_tasks + completed_tasks
+    
+    return render_template('tasks.html', 
+                           tasks=all_tasks_to_show, 
+                           completed_task_ids=completed_task_ids,
+                           limit=limit,
+                           recent_completions=recent_completions)
 
 @app.route('/tasks/complete/<int:task_id>', methods=['POST'])
 @login_required
 def complete_task(task_id):
+    # Verify daily limit first
+    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
+    recent_completions = CompletedTask.query.filter(
+        CompletedTask.user_id == current_user.id,
+        CompletedTask.completed_at >= twenty_four_hours_ago
+    ).count()
+    
+    config = AppConfig.query.first()
+    limit = config.upgraded_daily_limit if current_user.is_upgraded else config.normal_daily_limit
+    if recent_completions >= limit:
+        flash('لقد وصلت للحد الأقصى من المهام المتاحة لك خلال 24 ساعة.', 'danger')
+        return redirect(url_for('tasks'))
+
     task = Task.query.get_or_404(task_id)
     if CompletedTask.query.filter_by(user_id=current_user.id, task_id=task.id).first():
         flash('لقد قمت بإنجاز هذه المهمة مسبقاً.', 'danger')
@@ -357,7 +412,23 @@ def complete_task(task_id):
 def admin_dashboard():
     users = User.query.all()
     tasks = Task.query.all()
-    return render_template('admin_dashboard.html', users=users, tasks=tasks)
+    config = AppConfig.query.first()
+    return render_template('admin_dashboard.html', users=users, tasks=tasks, config=config)
+
+@app.route('/admin/config/update', methods=['POST'])
+@admin_required
+def admin_update_config():
+    config = AppConfig.query.first()
+    normal_limit = request.form.get('normal_daily_limit')
+    upgraded_limit = request.form.get('upgraded_daily_limit')
+    
+    if normal_limit and upgraded_limit:
+        config.normal_daily_limit = int(normal_limit)
+        config.upgraded_daily_limit = int(upgraded_limit)
+        db.session.commit()
+        flash('تم تحديث إعدادات المهام اليومية بنجاح.', 'success')
+        
+    return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/tasks/add', methods=['POST'])
 @admin_required
