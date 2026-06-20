@@ -312,19 +312,23 @@ def settings():
         
         # CCP Account Logic (60 days rule)
         if ccp_account and ccp_account != current_user.ccp_account:
-            if current_user.ccp_last_changed:
-                last_changed_ccp = current_user.ccp_last_changed
-                if last_changed_ccp.tzinfo is not None:
-                    last_changed_ccp = last_changed_ccp.replace(tzinfo=None)
-                days_since_ccp = (now - last_changed_ccp).days
-                if days_since_ccp < 60:
-                    flash(f'لا يمكنك تغيير حساب CCP الآن. يرجى الانتظار {60 - days_since_ccp} يوماً.', 'danger')
+            existing_ccp = User.query.filter_by(ccp_account=ccp_account).first()
+            if existing_ccp:
+                flash('رقم الحساب (CCP) مستخدم من قبل حساب آخر.', 'danger')
+            else:
+                if current_user.ccp_last_changed:
+                    last_changed_ccp = current_user.ccp_last_changed
+                    if last_changed_ccp.tzinfo is not None:
+                        last_changed_ccp = last_changed_ccp.replace(tzinfo=None)
+                    days_since_ccp = (now - last_changed_ccp).days
+                    if days_since_ccp < 60:
+                        flash(f'لا يمكنك تغيير حساب CCP الآن. يرجى الانتظار {60 - days_since_ccp} يوماً.', 'danger')
+                    else:
+                        current_user.ccp_account = ccp_account
+                        current_user.ccp_last_changed = now
                 else:
                     current_user.ccp_account = ccp_account
                     current_user.ccp_last_changed = now
-            else:
-                current_user.ccp_account = ccp_account
-                current_user.ccp_last_changed = now
         elif not ccp_account:
             pass
         
@@ -337,38 +341,46 @@ def settings():
 
         # Instagram Logic (60 days rule)
         if instagram and instagram != current_user.instagram_username:
-            if current_user.instagram_last_changed:
-                # Convert to offset-naive datetime before subtraction
-                last_changed = current_user.instagram_last_changed
-                if last_changed.tzinfo is not None:
-                    last_changed = last_changed.replace(tzinfo=None)
-                days_since = (now - last_changed).days
-                if days_since < 60:
-                    flash(f'لا يمكنك تغيير حساب انستغرام الآن. يرجى الانتظار {60 - days_since} يوماً.', 'danger')
+            existing_ig = User.query.filter_by(instagram_username=instagram).first()
+            if existing_ig:
+                flash('حساب انستغرام مستخدم من قبل حساب آخر.', 'danger')
+            else:
+                if current_user.instagram_last_changed:
+                    # Convert to offset-naive datetime before subtraction
+                    last_changed = current_user.instagram_last_changed
+                    if last_changed.tzinfo is not None:
+                        last_changed = last_changed.replace(tzinfo=None)
+                    days_since = (now - last_changed).days
+                    if days_since < 60:
+                        flash(f'لا يمكنك تغيير حساب انستغرام الآن. يرجى الانتظار {60 - days_since} يوماً.', 'danger')
+                    else:
+                        current_user.instagram_username = instagram
+                        current_user.instagram_last_changed = now
                 else:
                     current_user.instagram_username = instagram
                     current_user.instagram_last_changed = now
-            else:
-                current_user.instagram_username = instagram
-                current_user.instagram_last_changed = now
         elif not instagram:
             pass
 
         # TikTok Logic (60 days rule)
         if tiktok and tiktok != current_user.tiktok_username:
-            if current_user.tiktok_last_changed:
-                last_changed_tk = current_user.tiktok_last_changed
-                if last_changed_tk.tzinfo is not None:
-                    last_changed_tk = last_changed_tk.replace(tzinfo=None)
-                days_since_tk = (now - last_changed_tk).days
-                if days_since_tk < 60:
-                    flash(f'لا يمكنك تغيير حساب تيك توك الآن. يرجى الانتظار {60 - days_since_tk} يوماً.', 'danger')
+            existing_tk = User.query.filter_by(tiktok_username=tiktok).first()
+            if existing_tk:
+                flash('حساب تيك توك مستخدم من قبل حساب آخر.', 'danger')
+            else:
+                if current_user.tiktok_last_changed:
+                    last_changed_tk = current_user.tiktok_last_changed
+                    if last_changed_tk.tzinfo is not None:
+                        last_changed_tk = last_changed_tk.replace(tzinfo=None)
+                    days_since_tk = (now - last_changed_tk).days
+                    if days_since_tk < 60:
+                        flash(f'لا يمكنك تغيير حساب تيك توك الآن. يرجى الانتظار {60 - days_since_tk} يوماً.', 'danger')
+                    else:
+                        current_user.tiktok_username = tiktok
+                        current_user.tiktok_last_changed = now
                 else:
                     current_user.tiktok_username = tiktok
                     current_user.tiktok_last_changed = now
-            else:
-                current_user.tiktok_username = tiktok
-                current_user.tiktok_last_changed = now
         elif not tiktok:
             pass
 
@@ -778,6 +790,28 @@ def admin_update_user(user_id):
         except ValueError:
             flash('الرصيد المدخل غير صالح.', 'danger')
             
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/user/<int:user_id>/update_membership', methods=['POST'])
+@admin_required
+def admin_update_user_membership(user_id):
+    user = User.query.get_or_404(user_id)
+    membership_type = request.form.get('membership_type')
+    
+    if membership_type in ['free', 'vip_10_days', 'vip_lifetime']:
+        user.membership_type = membership_type
+        if membership_type == 'vip_10_days':
+            user.membership_expires_at = datetime.utcnow() + timedelta(days=10)
+        elif membership_type == 'vip_lifetime':
+            user.membership_expires_at = None
+        else:
+            user.membership_expires_at = None
+            
+        db.session.commit()
+        flash(f'تم تحديث باقة المستخدم {user.username} بنجاح.', 'success')
+    else:
+        flash('الباقة المحددة غير صالحة.', 'danger')
+        
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/backup/export')

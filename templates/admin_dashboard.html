@@ -241,10 +241,20 @@
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <form action="{{ url_for('admin_update_user', user_id=u.id) }}" method="POST" class="flex items-center gap-2">
-                                    <input type="number" step="0.01" name="balance" value="{{ u.balance }}" class="w-24 px-3 py-1.5 text-sm font-bold border border-slate-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-left" dir="ltr">
-                                    <button type="submit" class="text-white bg-slate-800 hover:bg-slate-900 px-3 py-1.5 rounded-lg transition text-xs font-bold shadow-sm">حفظ</button>
-                                </form>
+                                <div class="flex flex-col gap-2">
+                                    <form action="{{ url_for('admin_update_user', user_id=u.id) }}" method="POST" class="flex items-center gap-2">
+                                        <input type="number" step="0.01" name="balance" value="{{ u.balance }}" class="w-24 px-3 py-1.5 text-sm font-bold border border-slate-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-left" dir="ltr">
+                                        <button type="submit" class="text-white bg-slate-800 hover:bg-slate-900 px-3 py-1.5 rounded-lg transition text-xs font-bold shadow-sm">حفظ</button>
+                                    </form>
+                                    <form action="{{ url_for('admin_update_user_membership', user_id=u.id) }}" method="POST" class="flex items-center gap-2 mt-1">
+                                        <select name="membership_type" class="w-24 px-1 py-1.5 text-xs font-bold border border-slate-300 rounded-lg focus:outline-none focus:border-purple-500">
+                                            <option value="free" {% if u.membership_type == 'free' %}selected{% endif %}>عادي</option>
+                                            <option value="vip_10_days" {% if u.membership_type == 'vip_10_days' %}selected{% endif %}>VIP 10</option>
+                                            <option value="vip_lifetime" {% if u.membership_type == 'vip_lifetime' %}selected{% endif %}>VIP دائم</option>
+                                        </select>
+                                        <button type="submit" class="text-white bg-purple-600 hover:bg-purple-700 px-3 py-1.5 rounded-lg transition text-xs font-bold shadow-sm">تفعيل</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
