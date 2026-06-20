@@ -350,7 +350,35 @@
                             <label class="block text-sm font-bold text-slate-700 mb-1">رابط المهمة (اختياري)</label>
                             <input type="url" name="link" placeholder="https://..." class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-left" dir="ltr">
                         </div>
-                        <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-purple-600 hover:bg-purple-700 transition shadow-md">
+                        
+                        <!-- خصائص الاستهداف والحد الأقصى -->
+                        <div class="border-t border-slate-100 pt-4 mt-4">
+                            <h4 class="text-sm font-bold text-slate-900 mb-3">إعدادات الاستهداف والحد الأقصى</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-1">الحد الأقصى للإنجازات</label>
+                                    <input type="number" name="max_completions" placeholder="مثال: 10000 (اختياري)" min="1" class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-left" dir="ltr">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-1">استهداف الجنس</label>
+                                    <select name="target_gender" class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                                        <option value="all">الجميع</option>
+                                        <option value="male">ذكور فقط</option>
+                                        <option value="female">إناث فقط</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-1">الحد الأدنى للعمر</label>
+                                    <input type="number" name="min_age" placeholder="مثال: 18 (اختياري)" min="1" max="100" class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-left" dir="ltr">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-1">الحد الأقصى للعمر</label>
+                                    <input type="number" name="max_age" placeholder="مثال: 35 (اختياري)" min="1" max="100" class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-left" dir="ltr">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-purple-600 hover:bg-purple-700 transition shadow-md mt-4">
                             إضافة المهمة
                         </button>
                     </form>
@@ -380,7 +408,7 @@
                                     {{ task.link }}
                                 </div>
                                 {% endif %}
-                                <div class="flex items-center gap-4 mt-3">
+                                <div class="flex flex-wrap items-center gap-4 mt-3">
                                     {% if task.link %}
                                     <a href="{{ task.link }}" target="_blank" class="inline-flex items-center gap-1 text-sm font-bold text-purple-600 hover:text-purple-800">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
@@ -389,8 +417,19 @@
                                     {% endif %}
                                     <span class="inline-flex items-center gap-1 text-sm font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        عدد الإنجازات: {{ task.completions_count }}
+                                        عدد الإنجازات: {{ task.completions_count }}{% if task.max_completions %} / {{ task.max_completions }}{% endif %}
                                     </span>
+                                    
+                                    {% if task.target_gender != 'all' or task.min_age or task.max_age %}
+                                    <span class="inline-flex items-center gap-1 text-sm font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                        الاستهداف: 
+                                        {% if task.target_gender == 'male' %}ذكور{% elif task.target_gender == 'female' %}إناث{% else %}الجميع{% endif %}
+                                        {% if task.min_age or task.max_age %}
+                                            (العمر: {{ task.min_age or 'الكل' }} - {{ task.max_age or 'الكل' }})
+                                        {% endif %}
+                                    </span>
+                                    {% endif %}
                                 </div>
                                 <form action="{{ url_for('admin_delete_task', task_id=task.id) }}" method="POST" class="absolute top-5 right-5" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
                                     <button type="submit" class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-colors" title="حذف المهمة">

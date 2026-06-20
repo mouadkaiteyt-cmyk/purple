@@ -35,6 +35,18 @@
                     <label for="password" class="sr-only">كلمة المرور</label>
                     <input id="password" name="password" type="password" autocomplete="new-password" required class="appearance-none rounded-xl relative block w-full px-4 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm" placeholder="كلمة المرور">
                 </div>
+                <div>
+                    <label for="gender" class="sr-only">الجنس</label>
+                    <select id="gender" name="gender" required class="appearance-none rounded-xl relative block w-full px-4 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm">
+                        <option value="" disabled selected>اختر الجنس</option>
+                        <option value="male">ذكر</option>
+                        <option value="female">أنثى</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="age" class="sr-only">العمر</label>
+                    <input id="age" name="age" type="number" required min="10" max="100" class="appearance-none rounded-xl relative block w-full px-4 py-3 border border-slate-300 placeholder-slate-500 text-slate-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm" placeholder="العمر (مثال: 25)">
+                </div>
             </div>
 
             <div>

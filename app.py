@@ -37,6 +37,8 @@ class User(UserMixin, db.Model):
     tiktok_last_changed = db.Column(db.DateTime, nullable=True)
     membership_type = db.Column(db.String(20), default='free') # free, vip_10_days, vip_lifetime
     membership_expires_at = db.Column(db.DateTime, nullable=True)
+    gender = db.Column(db.String(10), default='male') # male, female
+    age = db.Column(db.Integer, default=18)
 
     referrals = db.relationship('User', backref=db.backref('referrer', remote_side=[id]))
 
@@ -56,6 +58,10 @@ class Task(db.Model):
     link = db.Column(db.String(500), nullable=True)
     reward_normal = db.Column(db.Float, default=0.25)
     reward_upgraded = db.Column(db.Float, default=1.0)
+    max_completions = db.Column(db.Integer, nullable=True)
+    target_gender = db.Column(db.String(10), default='all') # all, male, female
+    min_age = db.Column(db.Integer, nullable=True)
+    max_age = db.Column(db.Integer, nullable=True)
 
 class CompletedTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -132,10 +138,22 @@ with app.app_context():
                 db.session.execute(text("UPDATE \"user\" SET membership_type = 'vip_lifetime' WHERE is_upgraded = 1"))
             if 'membership_expires_at' not in columns:
                 db.session.execute(text('ALTER TABLE "user" ADD COLUMN membership_expires_at TIMESTAMP'))
+            if 'gender' not in columns:
+                db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN gender VARCHAR(10) DEFAULT 'male'"))
+            if 'age' not in columns:
+                db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN age INTEGER DEFAULT 18"))
         if 'task' in inspector.get_table_names():
             columns = [col['name'] for col in inspector.get_columns('task')]
             if 'link' not in columns:
                 db.session.execute(text('ALTER TABLE task ADD COLUMN link VARCHAR(500)'))
+            if 'max_completions' not in columns:
+                db.session.execute(text('ALTER TABLE task ADD COLUMN max_completions INTEGER'))
+            if 'target_gender' not in columns:
+                db.session.execute(text("ALTER TABLE task ADD COLUMN target_gender VARCHAR(10) DEFAULT 'all'"))
+            if 'min_age' not in columns:
+                db.session.execute(text('ALTER TABLE task ADD COLUMN min_age INTEGER'))
+            if 'max_age' not in columns:
+                db.session.execute(text('ALTER TABLE task ADD COLUMN max_age INTEGER'))
         if 'completed_task' in inspector.get_table_names():
             columns = [col['name'] for col in inspector.get_columns('completed_task')]
             if 'completed_at' not in columns:
@@ -186,6 +204,8 @@ def register():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
+        gender = request.form.get('gender', 'male')
+        age = request.form.get('age', 18, type=int)
         ref_code_post = request.form.get('ref_code', '')
 
         user_exists = User.query.filter((User.username == username) | (User.email == email)).first()
@@ -207,6 +227,8 @@ def register():
             username=username,
             email=email,
             password_hash=hashed_password,
+            gender=gender,
+            age=age,
             referral_code=new_referral_code,
             referred_by=referred_by_id
         )
@@ -459,11 +481,36 @@ def tasks():
     limit = config.upgraded_daily_limit if current_user.is_upgraded else config.normal_daily_limit
     available_slots = max(0, limit - recent_completions)
     
+    # Build query for available tasks
+    query = Task.query
     if completed_task_ids:
-        uncompleted_tasks = Task.query.filter(~Task.id.in_(completed_task_ids)).order_by(Task.id).limit(available_slots).all()
+        query = query.filter(~Task.id.in_(completed_task_ids))
+        
+    # Filter by gender
+    if current_user.gender:
+        query = query.filter((Task.target_gender == 'all') | (Task.target_gender == current_user.gender))
+        
+    # Filter by age
+    if current_user.age:
+        query = query.filter((Task.min_age == None) | (Task.min_age <= current_user.age))
+        query = query.filter((Task.max_age == None) | (Task.max_age >= current_user.age))
+        
+    uncompleted_tasks_raw = query.order_by(Task.id).all()
+    
+    # Filter out tasks that reached max_completions
+    uncompleted_tasks = []
+    for t in uncompleted_tasks_raw:
+        if t.max_completions:
+            c_count = CompletedTask.query.filter_by(task_id=t.id).count()
+            if c_count >= t.max_completions:
+                continue
+        uncompleted_tasks.append(t)
+        
+    uncompleted_tasks = uncompleted_tasks[:available_slots]
+    
+    if completed_task_ids:
         completed_tasks = Task.query.filter(Task.id.in_(completed_task_ids)).all()
     else:
-        uncompleted_tasks = Task.query.order_by(Task.id).limit(available_slots).all()
         completed_tasks = []
         
     all_tasks_to_show = uncompleted_tasks + completed_tasks
@@ -491,6 +538,28 @@ def complete_task(task_id):
         return redirect(url_for('tasks'))
 
     task = Task.query.get_or_404(task_id)
+    
+    # Check max completions limit
+    if task.max_completions:
+        c_count = CompletedTask.query.filter_by(task_id=task.id).count()
+        if c_count >= task.max_completions:
+            flash('عذراً، هذه المهمة وصلت للحد الأقصى من الإنجازات ولم تعد متاحة.', 'danger')
+            return redirect(url_for('tasks'))
+            
+    # Check gender targeting
+    if task.target_gender != 'all' and task.target_gender != current_user.gender:
+        flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (الجنس).', 'danger')
+        return redirect(url_for('tasks'))
+        
+    # Check age targeting
+    if current_user.age:
+        if task.min_age and current_user.age < task.min_age:
+            flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (العمر).', 'danger')
+            return redirect(url_for('tasks'))
+        if task.max_age and current_user.age > task.max_age:
+            flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (العمر).', 'danger')
+            return redirect(url_for('tasks'))
+
     if CompletedTask.query.filter_by(user_id=current_user.id, task_id=task.id).first():
         flash('لقد قمت بإنجاز هذه المهمة مسبقاً.', 'danger')
         return redirect(url_for('tasks'))
@@ -661,8 +730,24 @@ def admin_add_task():
         title = request.form.get('title')
         description = request.form.get('description')
         link = request.form.get('link')
+        
+    max_completions = request.form.get('max_completions')
+    max_completions = int(max_completions) if max_completions else None
+    target_gender = request.form.get('target_gender', 'all')
+    min_age = request.form.get('min_age')
+    min_age = int(min_age) if min_age else None
+    max_age = request.form.get('max_age')
+    max_age = int(max_age) if max_age else None
     
-    new_task = Task(title=title, description=description, link=link)
+    new_task = Task(
+        title=title, 
+        description=description, 
+        link=link,
+        max_completions=max_completions,
+        target_gender=target_gender,
+        min_age=min_age,
+        max_age=max_age
+    )
     db.session.add(new_task)
     db.session.commit()
     
