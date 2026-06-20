@@ -56,7 +56,7 @@ class Task(db.Model):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
     link = db.Column(db.String(500), nullable=True)
-    reward_normal = db.Column(db.Float, default=0.25)
+    reward_normal = db.Column(db.Float, default=0.1)
     reward_upgraded = db.Column(db.Float, default=1.0)
     max_completions = db.Column(db.Integer, nullable=True)
     target_gender = db.Column(db.String(10), default='all') # all, male, female
@@ -82,8 +82,8 @@ class WithdrawalRequest(db.Model):
 
 class AppConfig(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    normal_daily_limit = db.Column(db.Integer, default=1)
-    upgraded_daily_limit = db.Column(db.Integer, default=3)
+    normal_daily_limit = db.Column(db.Integer, default=4)
+    upgraded_daily_limit = db.Column(db.Integer, default=10)
     telegram_agent_link = db.Column(db.String(200), default='https://t.me/YourAgent')
 
 @login_manager.user_loader
@@ -171,7 +171,7 @@ with app.app_context():
 
     # Create an AppConfig automatically if none exists
     if not AppConfig.query.first():
-        config = AppConfig(normal_daily_limit=1, upgraded_daily_limit=3)
+        config = AppConfig(normal_daily_limit=4, upgraded_daily_limit=10)
         db.session.add(config)
         db.session.commit()
 
