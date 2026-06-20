@@ -15,14 +15,41 @@
                 <h3 class="text-xl font-bold text-slate-900 mb-4">إضافة مهمة جديدة</h3>
                 <form action="{{ url_for('admin_add_task') }}" method="POST" class="space-y-4">
                     <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">نوع المهمة</label>
+                        <select id="task_type" name="task_type" class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm" onchange="toggleTaskFields()">
+                            <option value="normal">مهمة عادية</option>
+                            <option value="follow">متابعة حساب (Tiktok / Instagram)</option>
+                            <option value="comment">تعليق على بوست (Tiktok / Instagram)</option>
+                        </select>
+                    </div>
+
+                    <div id="platform_div" class="hidden">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">المنصة</label>
+                        <select name="platform" class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                            <option value="tiktok">تيك توك (TikTok)</option>
+                            <option value="instagram">انستغرام (Instagram)</option>
+                        </select>
+                    </div>
+
+                    <div id="target_username_div" class="hidden">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">اسم المستخدم (User)</label>
+                        <input type="text" name="target_username" placeholder="username" class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-left" dir="ltr">
+                    </div>
+
+                    <div id="target_link_div" class="hidden">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">رابط البوست</label>
+                        <input type="url" name="target_link" placeholder="https://..." class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-left" dir="ltr">
+                    </div>
+
+                    <div id="normal_title_div">
                         <label class="block text-sm font-medium text-slate-700 mb-1">عنوان المهمة</label>
-                        <input type="text" name="title" required class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                        <input type="text" name="title" id="normal_title" required class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                     </div>
-                    <div>
+                    <div id="normal_desc_div">
                         <label class="block text-sm font-medium text-slate-700 mb-1">وصف المهمة</label>
-                        <textarea name="description" rows="3" required class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"></textarea>
+                        <textarea name="description" id="normal_desc" rows="3" required class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"></textarea>
                     </div>
-                    <div>
+                    <div id="normal_link_div">
                         <label class="block text-sm font-medium text-slate-700 mb-1">رابط المهمة (اختياري)</label>
                         <input type="url" name="link" placeholder="https://instagram.com/..." class="appearance-none rounded-xl relative block w-full px-4 py-2 border border-slate-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-left" dir="ltr">
                     </div>
@@ -30,6 +57,51 @@
                         إضافة
                     </button>
                 </form>
+
+                <script>
+                    function toggleTaskFields() {
+                        const type = document.getElementById('task_type').value;
+                        const platformDiv = document.getElementById('platform_div');
+                        const usernameDiv = document.getElementById('target_username_div');
+                        const linkDiv = document.getElementById('target_link_div');
+                        const normalTitleDiv = document.getElementById('normal_title_div');
+                        const normalDescDiv = document.getElementById('normal_desc_div');
+                        const normalLinkDiv = document.getElementById('normal_link_div');
+                        const titleInput = document.getElementById('normal_title');
+                        const descInput = document.getElementById('normal_desc');
+
+                        if (type === 'normal') {
+                            platformDiv.classList.add('hidden');
+                            usernameDiv.classList.add('hidden');
+                            linkDiv.classList.add('hidden');
+                            normalTitleDiv.classList.remove('hidden');
+                            normalDescDiv.classList.remove('hidden');
+                            normalLinkDiv.classList.remove('hidden');
+                            titleInput.required = true;
+                            descInput.required = true;
+                        } else if (type === 'follow') {
+                            platformDiv.classList.remove('hidden');
+                            usernameDiv.classList.remove('hidden');
+                            linkDiv.classList.add('hidden');
+                            normalTitleDiv.classList.add('hidden');
+                            normalDescDiv.classList.add('hidden');
+                            normalLinkDiv.classList.add('hidden');
+                            titleInput.required = false;
+                            descInput.required = false;
+                        } else if (type === 'comment') {
+                            platformDiv.classList.remove('hidden');
+                            usernameDiv.classList.add('hidden');
+                            linkDiv.classList.remove('hidden');
+                            normalTitleDiv.classList.add('hidden');
+                            normalDescDiv.classList.add('hidden');
+                            normalLinkDiv.classList.add('hidden');
+                            titleInput.required = false;
+                            descInput.required = false;
+                        }
+                    }
+                    // Run once on load to set initial state
+                    document.addEventListener('DOMContentLoaded', toggleTaskFields);
+                </script>
             </div>
 
             <!-- المهام الحالية -->

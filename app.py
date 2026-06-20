@@ -362,9 +362,38 @@ def admin_dashboard():
 @app.route('/admin/tasks/add', methods=['POST'])
 @admin_required
 def admin_add_task():
-    title = request.form.get('title')
-    description = request.form.get('description')
-    link = request.form.get('link')
+    task_type = request.form.get('task_type', 'normal')
+    
+    if task_type == 'follow':
+        platform = request.form.get('platform')
+        username = request.form.get('target_username')
+        if platform == 'tiktok':
+            title = 'متابعة حساب تيك توك'
+            description = 'قم بمتابعة هذا الحساب على تيك توك'
+            link = f'https://tiktok.com/@{username}' if not username.startswith('@') else f'https://tiktok.com/{username}'
+        elif platform == 'instagram':
+            title = 'متابعة حساب انستغرام'
+            description = 'قم بمتابعة هذا الحساب على انستغرام'
+            link = f'https://instagram.com/{username}'
+        else:
+            flash('منصة غير صالحة.', 'danger')
+            return redirect(url_for('admin_dashboard'))
+    elif task_type == 'comment':
+        platform = request.form.get('platform')
+        post_link = request.form.get('target_link')
+        if platform == 'tiktok':
+            title = 'تعليق على بوست تيك توك'
+        elif platform == 'instagram':
+            title = 'تعليق على بوست انستغرام'
+        else:
+            title = 'تعليق على بوست'
+            
+        description = 'تعليق ايجابي'
+        link = post_link
+    else:
+        title = request.form.get('title')
+        description = request.form.get('description')
+        link = request.form.get('link')
     
     new_task = Task(title=title, description=description, link=link)
     db.session.add(new_task)
