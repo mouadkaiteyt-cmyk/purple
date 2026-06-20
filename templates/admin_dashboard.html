@@ -5,7 +5,7 @@
     <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-3xl font-bold text-slate-900 tracking-tight">لوحة الإدارة الشاملة</h1>
-            <p class="mt-2 text-slate-600 font-medium">نظرة عامة على أداء المنصة، طلبات السحب، والمستخدمين.</p>
+            <p class="mt-2 text-slate-600 font-medium">نظرة عامة على أداء ReVerse، طلبات السحب، والمستخدمين.</p>
         </div>
         <div class="flex gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar" id="admin-tabs">
             <button onclick="switchTab('stats')" id="tab-btn-stats" class="tab-btn px-4 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap bg-slate-900 text-white shadow-md">الإحصائيات والسحوبات</button>
@@ -263,7 +263,7 @@
                 <!-- النسخ الاحتياطي -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                     <h3 class="text-xl font-bold mb-4">النسخ الاحتياطي والاستعادة</h3>
-                    <p class="text-sm text-slate-500 mb-4">حمل بيانات المنصة أو قم باستعادتها لضمان عدم فقدانها.</p>
+                    <p class="text-sm text-slate-500 mb-4">حمل بيانات ReVerse أو قم باستعادتها لضمان عدم فقدانها.</p>
                     
                     <div class="space-y-4">
                         <a href="{{ url_for('export_backup') }}" class="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-slate-200 text-sm font-bold rounded-xl text-slate-700 bg-white hover:bg-slate-50 transition shadow-sm">
@@ -285,7 +285,7 @@
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                    <h3 class="text-xl font-bold mb-4">إعدادات المنصة</h3>
+                    <h3 class="text-xl font-bold mb-4">إعدادات ReVerse</h3>
                     <form action="{{ url_for('admin_update_config') }}" method="POST" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
