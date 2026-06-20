@@ -85,6 +85,7 @@ class AppConfig(db.Model):
     normal_daily_limit = db.Column(db.Integer, default=4)
     upgraded_daily_limit = db.Column(db.Integer, default=10)
     telegram_agent_link = db.Column(db.String(200), default='https://t.me/YourAgent')
+    total_revenue = db.Column(db.Float, default=0.0)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -164,6 +165,8 @@ with app.app_context():
             columns = [col['name'] for col in inspector.get_columns('app_config')]
             if 'telegram_agent_link' not in columns:
                 db.session.execute(text("ALTER TABLE app_config ADD COLUMN telegram_agent_link VARCHAR(200) DEFAULT 'https://t.me/YourAgent'"))
+            if 'total_revenue' not in columns:
+                db.session.execute(text("ALTER TABLE app_config ADD COLUMN total_revenue FLOAT DEFAULT 0.0"))
         db.session.commit()
     except Exception as e:
         print(f"Migration error: {e}")
@@ -484,12 +487,18 @@ def upgrade(plan):
     current_user.balance -= price
     
     current_user.membership_type = plan
+    config = AppConfig.query.first()
+    
     if plan == 'vip_10_days':
+        if config:
+            config.total_revenue += 10.0
         if current_user.membership_expires_at and current_user.membership_expires_at > datetime.utcnow():
             current_user.membership_expires_at += timedelta(days=10)
         else:
             current_user.membership_expires_at = datetime.utcnow() + timedelta(days=10)
     else:
+        if config:
+            config.total_revenue += 40.0
         current_user.membership_expires_at = None
         
     db.session.commit()
@@ -509,7 +518,16 @@ def tasks():
     ).count()
     
     config = AppConfig.query.first()
-    limit = config.upgraded_daily_limit if current_user.is_upgraded else config.normal_daily_limit
+    if current_user.is_upgraded:
+        limit = config.upgraded_daily_limit
+    else:
+        # Check and downgrade if expired
+        if current_user.membership_type == 'vip_10_days' and current_user.membership_expires_at and current_user.membership_expires_at <= datetime.utcnow():
+            current_user.membership_type = 'free'
+            current_user.membership_expires_at = None
+            db.session.commit()
+        limit = config.normal_daily_limit
+        
     available_slots = max(0, limit - recent_completions)
     
     # Build query for available tasks
@@ -667,7 +685,8 @@ def admin_dashboard():
     
     # Stats
     total_users = User.query.count()
-    upgraded_users = User.query.filter_by(is_upgraded=True).count()
+    # Updated calculation for VIP users using is_upgraded property
+    upgraded_users = sum(1 for u in User.query.all() if u.is_upgraded)
     total_paid_result = db.session.query(db.func.sum(WithdrawalRequest.amount)).filter_by(status='approved').scalar()
     total_paid = total_paid_result if total_paid_result else 0.0
     pending_amount_result = db.session.query(db.func.sum(WithdrawalRequest.amount)).filter_by(status='pending').scalar()
@@ -819,17 +838,56 @@ def admin_update_user_membership(user_id):
     
     if membership_type in ['free', 'vip_10_days', 'vip_lifetime']:
         user.membership_type = membership_type
+        config = AppConfig.query.first()
+        
         if membership_type == 'vip_10_days':
+            if config:
+                config.total_revenue += 10.0
             user.membership_expires_at = datetime.utcnow() + timedelta(days=10)
         elif membership_type == 'vip_lifetime':
+            if config:
+                config.total_revenue += 40.0
             user.membership_expires_at = None
         else:
             user.membership_expires_at = None
             
         db.session.commit()
-        flash(f'تم تحديث باقة المستخدم {user.username} بنجاح.', 'success')
+        flash(f'تم تحديث باقة المستخدم {user.username} بنجاح واحتساب العوائد.', 'success')
     else:
         flash('الباقة المحددة غير صالحة.', 'danger')
+        
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
+@admin_required
+def admin_delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.is_admin:
+        flash('لا يمكن حذف حساب المسؤول.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+        
+    # Remove references to this user
+    User.query.filter_by(referred_by=user.id).update({User.referred_by: None})
+    CompletedTask.query.filter_by(user_id=user.id).delete()
+    WithdrawalRequest.query.filter_by(user_id=user.id).delete()
+    
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'تم حذف المستخدم {user.username} بنجاح.', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/users/reset_password/<int:user_id>', methods=['POST'])
+@admin_required
+def admin_reset_password(user_id):
+    user = User.query.get_or_404(user_id)
+    new_password = request.form.get('new_password')
+    
+    if new_password and len(new_password) >= 6:
+        user.password_hash = generate_password_hash(new_password)
+        db.session.commit()
+        flash(f'تم تعيين كلمة مرور جديدة للمستخدم {user.username} بنجاح.', 'success')
+    else:
+        flash('كلمة المرور يجب أن تكون 6 أحرف على الأقل.', 'danger')
         
     return redirect(url_for('admin_dashboard'))
 
