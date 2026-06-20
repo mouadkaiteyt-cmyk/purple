@@ -3,7 +3,7 @@ import uuid
 import json
 from datetime import datetime, timedelta
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, flash, abort, get_flashed_messages
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, get_flashed_messages, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -193,12 +193,27 @@ with app.app_context():
 def index():
     return render_template('index.html')
 
+@app.before_request
+def check_referral():
+    ref_code = request.args.get('ref')
+    if ref_code:
+        request.new_ref_code = ref_code
+
+@app.after_request
+def save_referral(response):
+    if hasattr(request, 'new_ref_code') and request.new_ref_code:
+        expires = datetime.utcnow() + timedelta(hours=48)
+        response.set_cookie('ref_code', request.new_ref_code, expires=expires)
+    return response
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     
-    ref_code = request.args.get('ref', '')
+    ref_code = request.args.get('ref')
+    if not ref_code:
+        ref_code = request.cookies.get('ref_code', '')
 
     if request.method == 'POST':
         username = request.form.get('username')
@@ -236,7 +251,11 @@ def register():
         db.session.commit()
 
         flash('تم التسجيل بنجاح! يمكنك الآن تسجيل الدخول.', 'success')
-        return redirect(url_for('login'))
+        resp = make_response(redirect(url_for('login')))
+        resp.delete_cookie('ref_code')
+        if hasattr(request, 'new_ref_code'):
+            delattr(request, 'new_ref_code')
+        return resp
 
     return render_template('register.html', ref_code=ref_code)
 
