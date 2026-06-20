@@ -53,7 +53,7 @@ class Task(db.Model):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
     link = db.Column(db.String(500), nullable=True)
-    reward_normal = db.Column(db.Float, default=0.2)
+    reward_normal = db.Column(db.Float, default=0.25)
     reward_upgraded = db.Column(db.Float, default=1.0)
 
 class CompletedTask(db.Model):
