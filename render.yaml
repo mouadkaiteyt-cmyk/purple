@@ -3,7 +3,7 @@ services:
     name: referral-platform
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: python autoping.py & gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0
