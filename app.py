@@ -517,10 +517,19 @@ def upgrade(plan):
 def merchant_boost():
     if request.method == 'POST':
         plan = request.form.get('plan')
-        link = request.form.get('link')
+        platform = request.form.get('platform')
+        username = request.form.get('username')
         target_gender = request.form.get('target_gender', 'all')
         min_age = request.form.get('min_age')
         max_age = request.form.get('max_age')
+        
+        # Build the link based on platform
+        if platform == 'tiktok':
+            link = f'https://tiktok.com/@{username}' if not username.startswith('@') else f'https://tiktok.com/{username}'
+            title = 'متابعة حساب تيك توك (مدعوم)'
+        else: # default to instagram
+            link = f'https://instagram.com/{username}'
+            title = 'متابعة حساب انستغرام (مدعوم)'
         
         min_age = int(min_age) if min_age else None
         max_age = int(max_age) if max_age else None
@@ -556,7 +565,7 @@ def merchant_boost():
         current_user.balance -= price
         
         new_task = Task(
-            title='متابعة حساب تاجر (مدعوم)',
+            title=title,
             description='يرجى متابعة هذا الحساب لدعمه.',
             link=link,
             reward_normal=reward,
