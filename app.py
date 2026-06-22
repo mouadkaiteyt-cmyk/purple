@@ -533,6 +533,18 @@ def merchant_boost():
             price = 40.0
             followers = 5000
             reward = 0.005 # Platform profit
+        elif plan == '10000':
+            price = 70.0
+            followers = 10000
+            reward = 0.005
+        elif plan == '50000':
+            price = 300.0
+            followers = 50000
+            reward = 0.005
+        elif plan == '100000':
+            price = 500.0
+            followers = 100000
+            reward = 0.005
         else:
             flash('خطة غير صالحة', 'danger')
             return redirect(url_for('merchant_boost'))
@@ -566,7 +578,8 @@ def merchant_boost():
         flash('تمت إضافة حملتك بنجاح! ستظهر مهمتك في أعلى قائمة المهام.', 'success')
         return redirect(url_for('dashboard'))
         
-    return render_template('merchant_boost.html', user=current_user)
+    config = AppConfig.query.first()
+    return render_template('merchant_boost.html', user=current_user, config=config)
 
 @app.route('/tasks')
 @login_required
