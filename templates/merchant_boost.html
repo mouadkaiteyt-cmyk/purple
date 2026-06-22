@@ -154,10 +154,27 @@
     
     <div class="mt-8 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-6 sm:p-8 shadow-lg text-white text-center relative overflow-hidden mb-10">
         <div class="absolute -right-10 -top-10 w-32 h-32 bg-white opacity-20 rounded-full blur-2xl"></div>
+        <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-orange-600 opacity-50 rounded-full blur-3xl"></div>
         <div class="relative z-10">
-            <h3 class="text-2xl font-extrabold mb-2">🚀 جاهز لتفجير مبيعاتك؟</h3>
-            <p class="text-amber-50 text-sm sm:text-base mb-6 max-w-2xl mx-auto">لا تضيع وقتك ومالك في الأرقام الوهمية. ابنِ قاعدة جماهيرية حقيقية تتفاعل مع منتجاتك وتثق بعلامتك التجارية.</p>
-            <a href="#campaign-form" onclick="document.getElementById('campaign-form').scrollIntoView({behavior: 'smooth'}); return false;" class="inline-block bg-white text-amber-600 font-bold px-8 py-3.5 rounded-xl shadow-md hover:shadow-xl hover:scale-105 transition-all">
+            <h3 class="text-2xl sm:text-3xl font-extrabold mb-3">🚀 جاهز لتفجير مبيعاتك؟</h3>
+            <p class="text-amber-50 text-sm sm:text-lg mb-8 max-w-2xl mx-auto font-medium leading-relaxed">لا تضيع وقتك ومالك في الأرقام الوهمية. ابنِ قاعدة جماهيرية حقيقية تتفاعل مع منتجاتك وتثق بعلامتك التجارية وتحول المتابعين إلى عملاء دائمين.</p>
+            
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
+                <div class="flex items-center gap-2 bg-black/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">
+                    <svg class="w-5 h-5 text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-sm font-bold text-white">ضمان استرجاع الأموال</span>
+                </div>
+                <div class="flex items-center gap-2 bg-black/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">
+                    <svg class="w-5 h-5 text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <span class="text-sm font-bold text-white">دفع آمن وموثوق</span>
+                </div>
+                <div class="flex items-center gap-2 bg-black/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">
+                    <svg class="w-5 h-5 text-amber-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <span class="text-sm font-bold text-white">تنفيذ فوري</span>
+                </div>
+            </div>
+
+            <a href="#campaign-form" onclick="document.getElementById('campaign-form').scrollIntoView({behavior: 'smooth'}); return false;" class="inline-block bg-white text-amber-600 font-extrabold px-10 py-4 rounded-xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all text-lg">
                 إنشاء حملتي الاحترافية الآن
             </a>
         </div>
@@ -169,14 +186,14 @@
                 <h2 class="text-xl sm:text-2xl font-bold text-slate-900">إنشاء حملة جديدة</h2>
                 <p class="text-sm sm:text-base text-slate-500 mt-1">اختر الباقة المناسبة وقم بتحديد الاستهداف</p>
             </div>
-            <div class="flex flex-wrap items-center gap-3">
-                <div class="bg-indigo-50 px-3 py-2 sm:px-4 rounded-xl border border-indigo-100 flex items-center">
-                    <span class="text-indigo-600 font-medium text-xs sm:text-sm">رصيدك:</span>
-                    <span class="text-lg sm:text-xl font-bold text-indigo-700 mr-2" dir="ltr">{{ "%.2f"|format(user.balance) }}$</span>
+            <div class="flex flex-wrap items-stretch gap-3">
+                <div class="bg-indigo-50 px-4 py-2.5 rounded-xl border border-indigo-100 flex items-center justify-center">
+                    <span class="text-indigo-600 font-medium text-sm">رصيدك:</span>
+                    <span class="text-lg font-bold text-indigo-700 mr-2" dir="ltr">{{ "%.2f"|format(user.balance) }}$</span>
                 </div>
                 {% if config and config.telegram_agent_link %}
-                <a href="{{ config.telegram_agent_link }}" target="_blank" class="bg-indigo-600 text-white px-3 py-2 sm:px-4 rounded-xl border border-indigo-700 hover:bg-indigo-700 transition font-medium text-xs sm:text-sm flex items-center shadow-sm">
-                    <svg class="w-4 h-4 ml-1.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.21-1.12-.33-1.08-.7.02-.19.27-.39.75-.59 2.95-1.29 4.92-2.14 5.9-2.55 2.81-1.18 3.39-1.38 3.77-1.38.08 0 .27.02.39.1.1.06.13.15.15.24.01.07.02.16.02.26z"/></svg>
+                <a href="{{ config.telegram_agent_link }}" target="_blank" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl border border-indigo-700 hover:bg-indigo-700 transition font-bold text-sm flex items-center justify-center shadow-sm">
+                    <svg class="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.21-1.12-.33-1.08-.7.02-.19.27-.39.75-.59 2.95-1.29 4.92-2.14 5.9-2.55 2.81-1.18 3.39-1.38 3.77-1.38.08 0 .27.02.39.1.1.06.13.15.15.24.01.07.02.16.02.26z"/></svg>
                     شحن الرصيد
                 </a>
                 {% endif %}
