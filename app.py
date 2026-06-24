@@ -359,8 +359,8 @@ def manual_withdraw():
         flash('مبلغ السحب غير صالح.', 'danger')
         return redirect(url_for('settings'))
         
-    if not current_user.ccp_account:
-        flash('يرجى إضافة حساب CCP الخاص بك أولاً.', 'danger')
+    if not current_user.ccp_account or not current_user.tiktok_username or not current_user.instagram_username:
+        flash('يرجى إضافة جميع معلومات الحساب', 'danger')
         return redirect(url_for('settings'))
         
     if current_user.balance < amount:

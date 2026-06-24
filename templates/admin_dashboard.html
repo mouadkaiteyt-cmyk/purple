@@ -81,7 +81,7 @@
                         <tr>
                             <th scope="col" class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">المستخدم</th>
                             <th scope="col" class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">المبلغ</th>
-                            <th scope="col" class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">رقم الحساب (CCP)</th>
+                            <th scope="col" class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">معلومات الحساب</th>
                             <th scope="col" class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">التاريخ</th>
                             <th scope="col" class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">الإجراء</th>
                         </tr>
@@ -97,7 +97,11 @@
                                 <span class="text-sm font-black text-emerald-600">{{ "%.2f"|format(req.amount) }}$</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-mono text-slate-700 bg-slate-100 px-2 py-1 rounded inline-block">{{ req.ccp_account }}</div>
+                                <div class="flex flex-col gap-1">
+                                    <div class="text-xs"><span class="font-bold text-slate-500">CCP:</span> <span class="font-mono text-slate-800">{{ req.ccp_account }}</span></div>
+                                    <div class="text-xs"><span class="font-bold text-slate-500">TikTok:</span> <span class="font-mono text-slate-800">{{ req.user.tiktok_username|default('-', true) }}</span></div>
+                                    <div class="text-xs"><span class="font-bold text-slate-500">Instagram:</span> <span class="font-mono text-slate-800">{{ req.user.instagram_username|default('-', true) }}</span></div>
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500" dir="ltr">
                                 {{ req.created_at.strftime('%Y-%m-%d %H:%M') }}
