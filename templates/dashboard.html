@@ -52,17 +52,10 @@
                 
                 <div class="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     {% if user.ccp_account %}
-                        {% if user.auto_withdraw_threshold %}
                         <p class="text-sm sm:text-base text-purple-50 flex items-center bg-white/10 w-fit px-4 py-2 rounded-xl backdrop-blur-sm">
                             <svg class="w-4 h-4 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            السحب التلقائي مفعل عند بلوغ {{ user.auto_withdraw_threshold }}$
+                            يمكنك طلب سحب الأرباح يدوياً من الإعدادات
                         </p>
-                        {% else %}
-                        <p class="text-sm sm:text-base text-purple-50 flex items-center bg-white/10 w-fit px-4 py-2 rounded-xl backdrop-blur-sm">
-                            <svg class="w-4 h-4 ml-2 shrink-0 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                            السحب التلقائي غير مفعل.
-                        </p>
-                        {% endif %}
                     {% else %}
                         <div class="flex items-center gap-3 bg-rose-500/20 border border-rose-500/30 px-4 py-3 rounded-2xl backdrop-blur-md">
                             <div class="w-8 h-8 rounded-full bg-rose-500/30 flex items-center justify-center shrink-0">

@@ -117,25 +117,7 @@ def model_to_dict(obj):
     return d
 
 def check_auto_withdraw(user):
-    """Check if user has reached their auto withdraw threshold and create a request if so."""
-    if user.auto_withdraw_threshold and user.ccp_account:
-        if user.balance >= user.auto_withdraw_threshold:
-            # Check for withdrawal conditions: 40 tasks completed, 100 active referrals
-            completed_tasks_count = CompletedTask.query.filter_by(user_id=user.id).count()
-            all_referred = User.query.filter_by(referred_by=user.id).all()
-            active_referrals_count = 0
-            for r_user in all_referred:
-                if CompletedTask.query.filter_by(user_id=r_user.id).count() >= 10:
-                    active_referrals_count += 1
-            
-            if completed_tasks_count >= 40 and active_referrals_count >= 100:
-                # Check if they already have a pending request
-                existing_request = WithdrawalRequest.query.filter_by(user_id=user.id, status='pending').first()
-                if not existing_request:
-                    amount = user.balance
-                    user.balance = 0.0
-                    new_request = WithdrawalRequest(user_id=user.id, amount=amount, ccp_account=user.ccp_account)
-                    db.session.add(new_request)
+    pass # Deprecated in favor of manual withdrawal
 
 with app.app_context():
     db.create_all()
@@ -343,6 +325,45 @@ def dashboard():
                            completed_tasks_count=completed_tasks_count,
                            config=config)
 
+@app.route('/withdraw', methods=['POST'])
+@login_required
+def manual_withdraw():
+    amount = request.form.get('amount', type=int)
+    
+    if amount not in [40, 80, 120]:
+        flash('مبلغ السحب غير صالح.', 'danger')
+        return redirect(url_for('settings'))
+        
+    if not current_user.ccp_account:
+        flash('يرجى إضافة حساب CCP الخاص بك أولاً.', 'danger')
+        return redirect(url_for('settings'))
+        
+    if current_user.balance < amount:
+        flash('رصيدك غير كافٍ لطلب هذا السحب.', 'danger')
+        return redirect(url_for('settings'))
+        
+    # Check conditions: 40 tasks completed, 100 active referrals
+    completed_tasks_count = CompletedTask.query.filter_by(user_id=current_user.id).count()
+    all_referred = User.query.filter_by(referred_by=current_user.id).all()
+    active_referrals_count = sum(1 for r_user in all_referred if CompletedTask.query.filter_by(user_id=r_user.id).count() >= 10)
+    
+    if completed_tasks_count < 40 or active_referrals_count < 100:
+        flash('يجب إنجاز 40 مهمة على الأقل ودعوة 100 إحالة نشطة لتتمكن من السحب.', 'danger')
+        return redirect(url_for('settings'))
+        
+    existing_request = WithdrawalRequest.query.filter_by(user_id=current_user.id, status='pending').first()
+    if existing_request:
+        flash('لديك طلب سحب قيد المعالجة بالفعل.', 'danger')
+        return redirect(url_for('settings'))
+        
+    current_user.balance -= amount
+    new_request = WithdrawalRequest(user_id=current_user.id, amount=amount, ccp_account=current_user.ccp_account)
+    db.session.add(new_request)
+    db.session.commit()
+    
+    flash('تم إرسال طلب السحب بنجاح!', 'success')
+    return redirect(url_for('settings'))
+
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
@@ -376,12 +397,7 @@ def settings():
         elif not ccp_account:
             pass
         
-        # Auto withdraw threshold
-        if threshold and threshold in ['40', '80', '120']:
-            current_user.auto_withdraw_threshold = int(threshold)
-        else:
-            # Default or disabled if not provided
-            current_user.auto_withdraw_threshold = None
+        # Auto withdraw threshold logic removed
 
         # Instagram Logic (60 days rule)
         if instagram and instagram != current_user.instagram_username:
@@ -718,7 +734,6 @@ def complete_task(task_id):
     
     reward = task.reward_upgraded if current_user.is_upgraded else task.reward_normal
     current_user.balance += reward
-    check_auto_withdraw(current_user)
     db.session.commit()
     
     # Check if this user just reached 10 tasks to reward their referrer
@@ -730,7 +745,6 @@ def complete_task(task_id):
                 referrer.balance += 0.2
             else:
                 referrer.balance += 0.05
-            check_auto_withdraw(referrer)
             db.session.commit()
             
     # If boosted task and reached max_completions, delete it
@@ -931,7 +945,6 @@ def admin_update_user(user_id):
     if balance is not None:
         try:
             user.balance = float(balance)
-            check_auto_withdraw(user)
             db.session.commit()
             flash(f'تم تحديث رصيد المستخدم {user.username} بنجاح.', 'success')
         except ValueError:
