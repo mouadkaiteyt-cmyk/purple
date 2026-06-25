@@ -102,6 +102,15 @@ class AppConfig(db.Model):
     telegram_agent_link = db.Column(db.String(200), default='https://t.me/YourAgent')
     total_revenue = db.Column(db.Float, default=0.0)
 
+class Advertisement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    image_url = db.Column(db.String(500), nullable=False)
+    target_url = db.Column(db.String(500), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    views = db.Column(db.Integer, default=0)
+    clicks = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -338,6 +347,11 @@ def dashboard():
     config = AppConfig.query.first()
     notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
     
+    ad = Advertisement.query.filter_by(is_active=True).first()
+    if ad:
+        ad.views += 1
+        db.session.commit()
+    
     return render_template('dashboard.html', 
                            user=current_user, 
                            referrals_count=referrals_count,
@@ -348,7 +362,15 @@ def dashboard():
                            total_tasks=total_tasks,
                            completed_tasks_count=completed_tasks_count,
                            config=config,
-                           notifications=notifications)
+                           notifications=notifications,
+                           ad=ad)
+
+@app.route('/ad_click/<int:ad_id>')
+def ad_click(ad_id):
+    ad = Advertisement.query.get_or_404(ad_id)
+    ad.clicks += 1
+    db.session.commit()
+    return redirect(ad.target_url)
 
 @app.route('/withdraw', methods=['POST'])
 @login_required
@@ -838,6 +860,9 @@ def admin_dashboard():
     pending_amount_result = db.session.query(db.func.sum(WithdrawalRequest.amount)).filter_by(status='pending').scalar()
     pending_amount = pending_amount_result if pending_amount_result else 0.0
 
+    # Ad settings
+    ad = Advertisement.query.first()
+
     return render_template('admin_dashboard.html', 
                            users=users, 
                            tasks=tasks, 
@@ -847,7 +872,8 @@ def admin_dashboard():
                            total_users=total_users,
                            upgraded_users=upgraded_users,
                            total_paid=total_paid,
-                           pending_amount=pending_amount)
+                           pending_amount=pending_amount,
+                           ad=ad)
 
 @app.route('/admin/withdrawals/<int:req_id>/<action>', methods=['POST'])
 @admin_required
@@ -876,6 +902,30 @@ def admin_process_withdrawal(req_id, action):
         
     db.session.commit()
     return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/ad/update', methods=['POST'])
+@admin_required
+def admin_update_ad():
+    image_url = request.form.get('image_url')
+    target_url = request.form.get('target_url')
+    is_active = request.form.get('is_active') == 'on'
+    
+    ad = Advertisement.query.first()
+    if not ad:
+        ad = Advertisement()
+        db.session.add(ad)
+        
+    ad.image_url = image_url
+    ad.target_url = target_url
+    ad.is_active = is_active
+    
+    if request.form.get('reset_stats') == 'on':
+        ad.views = 0
+        ad.clicks = 0
+        
+    db.session.commit()
+    flash('تم تحديث إعدادات الإعلان بنجاح.', 'success')
+    return redirect(url_for('admin_dashboard') + '?tab=ad')
 
 @app.route('/admin/config/update', methods=['POST'])
 @admin_required
