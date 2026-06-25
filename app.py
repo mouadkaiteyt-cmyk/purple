@@ -862,6 +862,13 @@ def admin_dashboard():
 
     # Ad settings
     ads = Advertisement.query.all()
+    # Ensure there are 3 ads in the database for rendering
+    if len(ads) < 3:
+        for _ in range(3 - len(ads)):
+            new_ad = Advertisement(image_url='', target_url='', is_active=False)
+            db.session.add(new_ad)
+        db.session.commit()
+        ads = Advertisement.query.all()
 
     return render_template('admin_dashboard.html', 
                            users=users, 
