@@ -959,7 +959,7 @@ def admin_update_config():
     db.session.commit()
     flash('تم تحديث الإعدادات بنجاح.', 'success')
         
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('admin_dashboard') + '?tab=tasks')
 
 @app.route('/admin/tasks/add', methods=['POST'])
 @admin_required
