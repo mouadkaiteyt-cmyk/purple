@@ -37,6 +37,12 @@
                 
                 <!-- Icon-Only Menu (Desktop & Mobile) -->
                 <div class="flex items-center space-x-2 space-x-reverse sm:space-x-4 sm:space-x-reverse">
+                    <!-- PWA Install Button (Hidden by default) -->
+                    <button id="pwa-install-btn" onclick="installPWA()" class="hidden items-center bg-purple-100 text-purple-700 hover:bg-purple-200 p-2 sm:px-4 sm:py-2 rounded-xl transition-all font-bold text-sm border border-purple-200 shadow-sm cursor-pointer">
+                        <svg class="w-5 h-5 sm:ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <span class="hidden sm:inline">تثبيت التطبيق</span>
+                    </button>
+
                     {% if current_user.is_authenticated %}
                         {% if current_user.is_admin %}
                             <a href="{{ url_for('admin_dashboard') }}" title="الإدارة" class="text-slate-500 hover:text-amber-600 hover:bg-amber-50 p-2 sm:p-2.5 rounded-xl transition-all">
@@ -110,18 +116,24 @@
 
         // PWA Install Prompt Logic
         let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent the mini-infobar from appearing on mobile
-            e.preventDefault();
-            // Stash the event so it can be triggered later.
-            deferredPrompt = e;
-            // Show the install button/modal
-            const installBtn = document.getElementById('pwa-install-btn');
-            if(installBtn) {
-                installBtn.classList.remove('hidden');
-                installBtn.classList.add('flex');
-            }
-        });
+        
+        // Only show if not already installed (checking standalone mode)
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        
+        if (!isStandalone) {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent the mini-infobar from appearing on mobile
+                e.preventDefault();
+                // Stash the event so it can be triggered later.
+                deferredPrompt = e;
+                // Show the install button/modal
+                const installBtn = document.getElementById('pwa-install-btn');
+                if(installBtn) {
+                    installBtn.classList.remove('hidden');
+                    installBtn.classList.add('flex');
+                }
+            });
+        }
 
         function installPWA() {
             if (deferredPrompt) {
@@ -131,19 +143,28 @@
                 deferredPrompt.userChoice.then((choiceResult) => {
                     if (choiceResult.outcome === 'accepted') {
                         console.log('User accepted the install prompt');
+                        const installBtn = document.getElementById('pwa-install-btn');
+                        if(installBtn) {
+                            installBtn.classList.add('hidden');
+                            installBtn.classList.remove('flex');
+                        }
                     } else {
                         console.log('User dismissed the install prompt');
                     }
                     deferredPrompt = null;
-                    // Hide the install button
-                    const installBtn = document.getElementById('pwa-install-btn');
-                    if(installBtn) {
-                        installBtn.classList.add('hidden');
-                        installBtn.classList.remove('flex');
-                    }
                 });
             }
         }
+
+        // Listen for successful installation
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('App was successfully installed');
+            const installBtn = document.getElementById('pwa-install-btn');
+            if(installBtn) {
+                installBtn.classList.add('hidden');
+                installBtn.classList.remove('flex');
+            }
+        });
     </script>
 </body>
 </html>
