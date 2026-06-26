@@ -223,6 +223,12 @@ with app.app_context():
 def index():
     return render_template('index.html')
 
+@app.route('/sw.js')
+def sw():
+    response = make_response(app.send_static_file('sw.js'))
+    response.headers['Content-Type'] = 'application/javascript'
+    return response
+
 @app.before_request
 def check_referral():
     ref_code = request.args.get('ref')
