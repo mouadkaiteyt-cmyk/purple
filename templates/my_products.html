@@ -50,12 +50,39 @@
                 </div>
             </div>
             
-            <!-- Download Button -->
+            <!-- Action Area -->
             <div class="w-full sm:w-auto shrink-0 border-t sm:border-t-0 sm:border-r border-slate-100 pt-4 sm:pt-0 sm:pr-6">
-                <a href="{{ purchase.product.file_url }}" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-emerald-700 bg-emerald-100 hover:bg-emerald-200 font-bold transition-all shadow-sm">
-                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    تحميل المنتج
-                </a>
+                {% if purchase.product.product_type == 'digital_link' %}
+                    <a href="{{ purchase.product.file_url }}" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-xl text-emerald-700 bg-emerald-100 hover:bg-emerald-200 font-bold transition-all shadow-sm">
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        تحميل المنتج
+                    </a>
+                {% elif purchase.product.product_type == 'digital_code' %}
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center min-w-[200px]">
+                        <p class="text-xs text-slate-500 font-bold mb-1">الكود الخاص بك:</p>
+                        <code class="block font-mono text-lg font-bold text-slate-800 bg-white border border-slate-200 rounded-lg py-2 px-3 select-all">{{ purchase.product.code_content }}</code>
+                    </div>
+                {% elif purchase.product.product_type == 'physical' %}
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 min-w-[200px] text-sm">
+                        <p class="text-xs text-slate-500 font-bold mb-2">حالة الطلب:</p>
+                        {% if purchase.status == 'pending' %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800 font-bold">
+                                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                قيد المعالجة
+                            </span>
+                        {% elif purchase.status == 'shipped' %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-100 text-blue-800 font-bold">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                                جاري التوصيل
+                            </span>
+                        {% elif purchase.status == 'delivered' %}
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-800 font-bold">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                تم التوصيل
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endif %}
             </div>
         </div>
         {% else %}

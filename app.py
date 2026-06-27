@@ -118,7 +118,9 @@ class Product(db.Model):
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Float, nullable=False)
     image_url = db.Column(db.String(500), nullable=True)
-    file_url = db.Column(db.String(500), nullable=False)
+    product_type = db.Column(db.String(50), default='digital_link') # digital_link, digital_code, physical
+    file_url = db.Column(db.String(500), nullable=True) # For digital_link
+    code_content = db.Column(db.Text, nullable=True) # For digital_code
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Purchase(db.Model):
@@ -127,6 +129,12 @@ class Purchase(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     price_paid = db.Column(db.Float, nullable=False)
     purchased_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # For physical products
+    delivery_name = db.Column(db.String(100), nullable=True)
+    delivery_phone = db.Column(db.String(20), nullable=True)
+    delivery_state = db.Column(db.String(100), nullable=True)
+    status = db.Column(db.String(20), default='completed') # completed (digital), pending/shipped/delivered (physical)
     
     user = db.relationship('User', backref=db.backref('purchases', lazy=True))
     product = db.relationship('Product', backref=db.backref('purchases', lazy=True))
@@ -217,6 +225,25 @@ with app.app_context():
                 db.session.execute(text("ALTER TABLE app_config ADD COLUMN instagram_agent_link VARCHAR(200) DEFAULT 'https://instagram.com/YourAgent'"))
             if 'total_revenue' not in columns:
                 db.session.execute(text("ALTER TABLE app_config ADD COLUMN total_revenue FLOAT DEFAULT 0.0"))
+        if 'product' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('product')]
+            if 'product_type' not in columns:
+                db.session.execute(text("ALTER TABLE product ADD COLUMN product_type VARCHAR(50) DEFAULT 'digital_link'"))
+            if 'code_content' not in columns:
+                db.session.execute(text("ALTER TABLE product ADD COLUMN code_content TEXT"))
+            # Make file_url nullable if possible (SQLite doesn't support ALTER COLUMN easily, so we just add the new ones)
+
+        if 'purchase' in inspector.get_table_names():
+            columns = [col['name'] for col in inspector.get_columns('purchase')]
+            if 'delivery_name' not in columns:
+                db.session.execute(text("ALTER TABLE purchase ADD COLUMN delivery_name VARCHAR(100)"))
+            if 'delivery_phone' not in columns:
+                db.session.execute(text("ALTER TABLE purchase ADD COLUMN delivery_phone VARCHAR(20)"))
+            if 'delivery_state' not in columns:
+                db.session.execute(text("ALTER TABLE purchase ADD COLUMN delivery_state VARCHAR(100)"))
+            if 'status' not in columns:
+                db.session.execute(text("ALTER TABLE purchase ADD COLUMN status VARCHAR(20) DEFAULT 'completed'"))
+
         db.session.commit()
     except Exception as e:
         print(f"Migration error: {e}")
@@ -849,21 +876,46 @@ def store():
 def buy_product(product_id):
     product = Product.query.get_or_404(product_id)
     
-    # Check if already purchased
-    existing_purchase = Purchase.query.filter_by(user_id=current_user.id, product_id=product.id).first()
-    if existing_purchase:
-        flash('لقد قمت بشراء هذا المنتج مسبقاً.', 'info')
-        return redirect(url_for('my_products'))
+    # Check if already purchased for digital products only
+    if product.product_type != 'physical':
+        existing_purchase = Purchase.query.filter_by(user_id=current_user.id, product_id=product.id).first()
+        if existing_purchase:
+            flash('لقد قمت بشراء هذا المنتج مسبقاً.', 'info')
+            return redirect(url_for('my_products'))
         
     if current_user.balance < product.price:
         flash('رصيدك غير كافٍ لشراء هذا المنتج.', 'danger')
         return redirect(url_for('store'))
         
+    delivery_name = None
+    delivery_phone = None
+    delivery_state = None
+    status = 'completed'
+    
+    if product.product_type == 'physical':
+        delivery_name = request.form.get('delivery_name')
+        delivery_phone = request.form.get('delivery_phone')
+        delivery_state = request.form.get('delivery_state')
+        
+        if not delivery_name or not delivery_phone or not delivery_state:
+            flash('يرجى تعبئة جميع بيانات التوصيل.', 'danger')
+            return redirect(url_for('store'))
+            
+        status = 'pending'
+        
     # Deduct balance
     current_user.balance -= product.price
     
     # Create purchase
-    new_purchase = Purchase(user_id=current_user.id, product_id=product.id, price_paid=product.price)
+    new_purchase = Purchase(
+        user_id=current_user.id, 
+        product_id=product.id, 
+        price_paid=product.price,
+        delivery_name=delivery_name,
+        delivery_phone=delivery_phone,
+        delivery_state=delivery_state,
+        status=status
+    )
     db.session.add(new_purchase)
     
     # Process referral reward
