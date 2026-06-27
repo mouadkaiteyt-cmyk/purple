@@ -1,7 +1,7 @@
 const https = require('https');
 const http = require('http');
 
-const url = process.env.RENDER_EXTERNAL_URL || 'http://localhost:8000';
+const url = process.env.RENDER_EXTERNAL_URL || 'https://purple-oxtp.onrender.com';
 const interval = 5000; // 5 ثواني
 
 console.log(`Starting autoping for ${url} every 5 seconds...`);

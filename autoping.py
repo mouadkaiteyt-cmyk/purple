@@ -4,7 +4,7 @@ import datetime
 import threading
 import os
 
-URL = os.environ.get('RENDER_EXTERNAL_URL', 'http://localhost:8000')
+URL = os.environ.get('RENDER_EXTERNAL_URL', 'https://purple-oxtp.onrender.com')
 INTERVAL = 40  # 40 seconds
 
 def ping():
