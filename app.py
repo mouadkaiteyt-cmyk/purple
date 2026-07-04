@@ -773,7 +773,7 @@ def tasks():
         query = query.filter((Task.min_age == None) | (Task.min_age <= current_user.age))
         query = query.filter((Task.max_age == None) | (Task.max_age >= current_user.age))
         
-    uncompleted_tasks_raw = query.order_by(Task.is_boosted.desc(), Task.id.asc()).all()
+    uncompleted_tasks_raw = query.order_by(Task.is_boosted.desc(), Task.id.desc()).all()
     
     # Filter out tasks that reached max_completions
     uncompleted_tasks = []
@@ -1005,9 +1005,9 @@ def admin_dashboard():
         
     task_query = request.args.get('tq', '')
     if task_query:
-        tasks = Task.query.filter(Task.title.ilike(f'%{task_query}%') | Task.link.ilike(f'%{task_query}%')).all()
+        tasks = Task.query.filter(Task.title.ilike(f'%{task_query}%') | Task.link.ilike(f'%{task_query}%')).order_by(Task.id.desc()).all()
     else:
-        tasks = Task.query.all()
+        tasks = Task.query.order_by(Task.id.desc()).all()
         
     # Add stats to tasks
     for task in tasks:
