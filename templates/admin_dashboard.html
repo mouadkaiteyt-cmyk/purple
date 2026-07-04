@@ -501,11 +501,70 @@
                                     </span>
                                     {% endif %}
                                 </div>
-                                <form action="{{ url_for('admin_delete_task', task_id=task.id) }}" method="POST" class="absolute top-5 right-5" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
-                                    <button type="submit" class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-colors" title="حذف المهمة">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                <div class="flex items-center gap-2 absolute top-5 right-5">
+                                    <button onclick="document.getElementById('edit-task-{{ task.id }}').classList.toggle('hidden')" class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors" title="تعديل المهمة">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                     </button>
-                                </form>
+                                    <form action="{{ url_for('admin_delete_task', task_id=task.id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
+                                        <button type="submit" class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-colors" title="حذف المهمة">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Edit Task Form (Hidden by default) -->
+                                <div id="edit-task-{{ task.id }}" class="hidden mt-4 pt-4 border-t border-slate-200">
+                                    <form action="{{ url_for('admin_update_task', task_id=task.id) }}" method="POST" class="space-y-4">
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700 mb-1">عنوان المهمة</label>
+                                            <input type="text" name="title" value="{{ task.title }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700 mb-1">الوصف</label>
+                                            <textarea name="description" rows="2" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">{{ task.description }}</textarea>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-slate-700 mb-1">الرابط (اليوزر/اللينك)</label>
+                                            <input type="text" name="link" value="{{ task.link or '' }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-left" dir="ltr">
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">مكافأة العادي ($)</label>
+                                                <input type="number" step="0.001" name="reward_normal" value="{{ task.reward_normal }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-left" dir="ltr">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">مكافأة المطور ($)</label>
+                                                <input type="number" step="0.001" name="reward_upgraded" value="{{ task.reward_upgraded }}" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-left" dir="ltr">
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">الحد الأقصى للإنجازات</label>
+                                                <input type="number" name="max_completions" value="{{ task.max_completions or '' }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-left" dir="ltr">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">الاستهداف (الجنس)</label>
+                                                <select name="target_gender" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+                                                    <option value="all" {% if task.target_gender == 'all' %}selected{% endif %}>الجميع</option>
+                                                    <option value="male" {% if task.target_gender == 'male' %}selected{% endif %}>ذكور فقط</option>
+                                                    <option value="female" {% if task.target_gender == 'female' %}selected{% endif %}>إناث فقط</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">الحد الأدنى للعمر</label>
+                                                <input type="number" name="min_age" value="{{ task.min_age or '' }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-left" dir="ltr">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-slate-700 mb-1">الحد الأقصى للعمر</label>
+                                                <input type="number" name="max_age" value="{{ task.max_age or '' }}" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-left" dir="ltr">
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-end gap-2 pt-2">
+                                            <button type="button" onclick="document.getElementById('edit-task-{{ task.id }}').classList.add('hidden')" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition">إلغاء</button>
+                                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition shadow-sm">حفظ التعديلات</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         {% else %}
                             <div class="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">

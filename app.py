@@ -1196,6 +1196,46 @@ def admin_add_task():
     flash('تمت إضافة المهمة بنجاح.', 'success')
     return redirect(url_for('admin_dashboard'))
 
+@app.route('/admin/tasks/update/<int:task_id>', methods=['POST'])
+@admin_required
+def admin_update_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    
+    title = request.form.get('title')
+    if title:
+        task.title = title
+        
+    description = request.form.get('description')
+    if description:
+        task.description = description
+        
+    link = request.form.get('link')
+    if link is not None:
+        task.link = link
+        
+    reward_normal = request.form.get('reward_normal', type=float)
+    if reward_normal is not None:
+        task.reward_normal = reward_normal
+        
+    reward_upgraded = request.form.get('reward_upgraded', type=float)
+    if reward_upgraded is not None:
+        task.reward_upgraded = reward_upgraded
+        
+    max_completions = request.form.get('max_completions')
+    task.max_completions = int(max_completions) if max_completions else None
+        
+    task.target_gender = request.form.get('target_gender', 'all')
+    
+    min_age = request.form.get('min_age')
+    task.min_age = int(min_age) if min_age else None
+    
+    max_age = request.form.get('max_age')
+    task.max_age = int(max_age) if max_age else None
+    
+    db.session.commit()
+    flash('تم تحديث المهمة بنجاح.', 'success')
+    return redirect(url_for('admin_dashboard') + '?tab=tasks')
+
 @app.route('/admin/tasks/delete/<int:task_id>', methods=['POST'])
 @admin_required
 def admin_delete_task(task_id):
