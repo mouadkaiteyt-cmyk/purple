@@ -136,6 +136,9 @@ class Purchase(db.Model):
     delivery_state = db.Column(db.String(100), nullable=True)
     status = db.Column(db.String(20), default='completed') # completed (digital), pending/shipped/delivered (physical)
     
+    # For digital code products
+    code_received = db.Column(db.Text, nullable=True)
+    
     user = db.relationship('User', backref=db.backref('purchases', lazy=True))
     product = db.relationship('Product', backref=db.backref('purchases', lazy=True))
 
@@ -216,6 +219,10 @@ with app.app_context():
             Product.__table__.create(db.engine)
         if 'purchase' not in inspector.get_table_names():
             Purchase.__table__.create(db.engine)
+        else:
+            columns = [col['name'] for col in inspector.get_columns('purchase')]
+            if 'code_received' not in columns:
+                db.session.execute(text('ALTER TABLE purchase ADD COLUMN code_received TEXT'))
         
         if 'app_config' in inspector.get_table_names():
             columns = [col['name'] for col in inspector.get_columns('app_config')]
@@ -891,6 +898,7 @@ def buy_product(product_id):
     delivery_phone = None
     delivery_state = None
     status = 'completed'
+    code_received = None
     
     if product.product_type == 'physical':
         delivery_name = request.form.get('delivery_name')
@@ -902,6 +910,18 @@ def buy_product(product_id):
             return redirect(url_for('store'))
             
         status = 'pending'
+    elif product.product_type == 'digital_code':
+        if not product.code_content or not product.code_content.strip():
+            flash('عذراً، لقد نفدت الأكواد لهذا المنتج.', 'danger')
+            return redirect(url_for('store'))
+            
+        codes = [c.strip() for c in product.code_content.split('\n') if c.strip()]
+        if not codes:
+            flash('عذراً، لقد نفدت الأكواد لهذا المنتج.', 'danger')
+            return redirect(url_for('store'))
+            
+        code_received = codes.pop(0)
+        product.code_content = '\n'.join(codes)
         
     # Deduct balance
     current_user.balance -= product.price
@@ -914,7 +934,8 @@ def buy_product(product_id):
         delivery_name=delivery_name,
         delivery_phone=delivery_phone,
         delivery_state=delivery_state,
-        status=status
+        status=status,
+        code_received=code_received
     )
     db.session.add(new_purchase)
     
@@ -1192,10 +1213,20 @@ def admin_add_product():
     description = request.form.get('description')
     price = request.form.get('price', type=float)
     image_url = request.form.get('image_url')
+    product_type = request.form.get('product_type', 'digital_link')
     file_url = request.form.get('file_url')
+    code_content = request.form.get('code_content')
     
-    if not all([name, description, price, file_url]):
-        flash('يرجى ملء جميع الحقول المطلوبة.', 'danger')
+    if not name or not description or price is None:
+        flash('يرجى ملء الحقول الأساسية (الاسم، الوصف، السعر).', 'danger')
+        return redirect(url_for('admin_dashboard') + '?tab=products')
+        
+    if product_type == 'digital_link' and not file_url:
+        flash('يرجى إضافة رابط المنتج الرقمي.', 'danger')
+        return redirect(url_for('admin_dashboard') + '?tab=products')
+        
+    if product_type == 'digital_code' and not code_content:
+        flash('يرجى إضافة أكواد المنتج الرقمي.', 'danger')
         return redirect(url_for('admin_dashboard') + '?tab=products')
         
     new_product = Product(
@@ -1203,7 +1234,9 @@ def admin_add_product():
         description=description,
         price=price,
         image_url=image_url,
-        file_url=file_url
+        product_type=product_type,
+        file_url=file_url if product_type == 'digital_link' else None,
+        code_content=code_content if product_type == 'digital_code' else None
     )
     db.session.add(new_product)
     db.session.commit()
@@ -1309,7 +1342,10 @@ def export_backup():
         'tasks': [model_to_dict(t) for t in Task.query.all()],
         'completed_tasks': [model_to_dict(c) for c in CompletedTask.query.all()],
         'withdrawals': [model_to_dict(w) for w in WithdrawalRequest.query.all()],
-        'config': [model_to_dict(c) for c in AppConfig.query.all()]
+        'config': [model_to_dict(c) for c in AppConfig.query.all()],
+        'advertisements': [model_to_dict(a) for a in Advertisement.query.all()],
+        'products': [model_to_dict(p) for p in Product.query.all()],
+        'purchases': [model_to_dict(p) for p in Purchase.query.all()]
     }
     
     response = app.response_class(
@@ -1341,6 +1377,9 @@ def import_backup():
         data = json.load(file)
         
         # Clear existing data
+        Purchase.query.delete()
+        Product.query.delete()
+        Advertisement.query.delete()
         WithdrawalRequest.query.delete()
         CompletedTask.query.delete()
         Task.query.delete()
@@ -1387,6 +1426,24 @@ def import_backup():
             w.created_at = parse_dt(w_data.get('created_at'))
             w.processed_at = parse_dt(w_data.get('processed_at'))
             db.session.add(w)
+            
+        # Restore Advertisements
+        for a_data in data.get('advertisements', []):
+            a = Advertisement(**{k: v for k, v in a_data.items() if k != 'created_at'})
+            a.created_at = parse_dt(a_data.get('created_at'))
+            db.session.add(a)
+            
+        # Restore Products
+        for p_data in data.get('products', []):
+            p = Product(**{k: v for k, v in p_data.items() if k != 'created_at'})
+            p.created_at = parse_dt(p_data.get('created_at'))
+            db.session.add(p)
+            
+        # Restore Purchases
+        for pur_data in data.get('purchases', []):
+            pur = Purchase(**{k: v for k, v in pur_data.items() if k != 'purchased_at'})
+            pur.purchased_at = parse_dt(pur_data.get('purchased_at'))
+            db.session.add(pur)
             
         db.session.commit()
         flash('تم استعادة النسخة الاحتياطية بنجاح! يرجى تسجيل الدخول مجدداً.', 'success')
