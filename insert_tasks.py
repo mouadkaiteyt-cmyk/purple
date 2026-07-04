@@ -1,0 +1,201 @@
+from app import app, db, Task
+
+usernames = """armadillo3_77371xs
+mayaa135921
+khsaraa1344
+mariinaa355
+reren88883
+amaniyyyeri12
+amaiteey1
+firnanndes113
+miranova2449
+miran_daaa883
+amaniiibq23
+malakrova188
+9maryyj1
+minalina13492
+siyaaaxxn1
+panam34599
+normalalh3
+raiyyniib
+amaniiy11932
+relwaniiy
+amaniiiy2344
+dinaalim921
+piramiya_444
+fila_nijga65
+zinazela665
+viroomhiba
+miea_erraxs
+aresa_lino
+amanibula1733
+rema_ziesa
+amaniiiiy3355
+firdoissaniij
+numiiidialeza3
+cilyaaminni3
+raynix_5644
+renamda_566
+hillaacat_94
+zillnda_234
+amirazeeii348
+mariina_citee456
+realname_4443215
+fifi_6543_fd
+arw_35669228
+renad_59992
+rema_3598428
+eruye_355
+amina12432_34
+letsaay34661
+ealafje44592_ss
+relaynn_921fd
+qetowq_8527d
+ahlam_oowu45
+arbiiya_391
+canyon_214_xx
+aryanna_567
+wtlaamni_345
+afkewqi_334
+arabiya_3442_d
+minalisa_9911
+axaeroi_3
+rema_93271
+armaniya_567
+eysaw_46
+mima_zina92248
+armanya_92743
+relmakjdh_355
+owiyyaa_245
+ritaj_eti212
+aryana_fkee34
+rema_remas356
+amaniriya_56
+amiraniyaxx_1
+amiraniyaxx_3
+amiraniyaxx_4
+amiraniyaxx_5
+amiraniyaxx_6
+amiraniyaxx_7
+amiraniyaxx_8
+amiraniyaxx_9
+amiraniyaxx_10
+amiraniyaxx_11
+amiraniyaxx_12
+amiraniyaxx_13
+amiraniyaxx_14
+amiraniyaxx_15
+areoaa356
+arrrys_9911
+rinda_mina662
+armanda_2266yy
+aremas_66882
+arwa5_522
+remnnaa_78
+miraniya_55
+mieaa_411
+uyyyrg_678
+cartt_678
+yreem_6633
+anisa_66685s
+aryana_fee35
+firmana_39348
+relaksa_567
+amanviiit222
+ahliya_355566
+vibronkia_33311
+ajinova_33313
+ariyana_33341
+toghra_tewess3
+ayanbiis_466
+arinoos_3355
+arytanakk_333
+anibaa_3545
+ariiyalal_2224
+sloth8_21338xs
+scorpion6_84940xs
+albatross5_43894xs
+dragonfly7_73576xs
+lizard4_32319xs
+heron5_48616xs
+hummingbird5_40646xs
+camel0_53573xs
+whale4_50579xs
+rooster3_19019xs
+goose1_14279xs
+spider9_61766xs
+salamander3_98463xs
+butterfly5_57256xs
+panda3_31031xs
+swallow7_62082xs
+polarbear0_46590xs
+wombat9_96746xs
+coyote4_46945xs
+ferret2_61357xs
+mantaray10_03953xs
+eel7_60599xs
+mandrill8_81157xs
+gazelle8_15627xs
+worm7_97135xs
+turtle6_93529xs
+grasshopper6_32478xs
+squirrel8_01254xs
+owl3_42756xs
+tapir6_81085xs
+rhinoceros1_43436xs
+moth3_75902xs
+badger4_34613xs
+frog0_77979xs
+owl1_41347xs
+ibis8_31040xs
+pelican4_07501xs
+owl1_11723xs
+dragonfly10_99593xs
+crab5_55962xs
+cattle1_10716xs
+seal5_82705xs
+boar7_95657xs
+badger5_23344xs
+dinosaur5_72599xs
+mosquito6_23302xs
+penguin1_07637xs
+hippopotamus3_12266xs
+ostrich5_28911xs
+tiger6_45644xs
+chicken10_37986xs
+jellyfish10_45176xs
+manatee9_96243xs
+ibis10_10880xs
+antelope10_38566xs
+stork9_91986xs
+koala8_42791xs
+magpie7_81347xs
+coyote4_16575xs
+shrimp1_90941xs
+woodpecker7_39716xs
+lion4_69540xs
+squid5_36672xs
+partridge4_94337xs"""
+
+usernames_list = [u.strip() for u in usernames.split('\n') if u.strip()]
+
+with app.app_context():
+    for username in usernames_list:
+        link = f'https://instagram.com/{username}'
+        title = 'متابعة حساب انستغرام'
+        description = 'قم بمتابعة هذا الحساب على انستغرام'
+        
+        new_task = Task(
+            title=title,
+            description=description,
+            link=link,
+            reward_normal=0.1,
+            reward_upgraded=1.0,
+            target_gender='all',
+            is_boosted=False
+        )
+        db.session.add(new_task)
+        
+    db.session.commit()
+    print(f"Successfully added {len(usernames_list)} tasks to the database.")
+    print(f"Total tasks now: {Task.query.count()}")
