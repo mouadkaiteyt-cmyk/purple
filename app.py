@@ -5,7 +5,7 @@ import requests
 import os
 import uuid
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, get_flashed_messages, make_response, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -167,7 +167,7 @@ def model_to_dict(obj):
     d = {}
     for column in obj.__table__.columns:
         val = getattr(obj, column.name)
-        if isinstance(val, datetime):
+        if isinstance(val, (datetime, date)):
             d[column.name] = val.isoformat()
         else:
             d[column.name] = val
@@ -1475,14 +1475,18 @@ def import_backup():
         def parse_dt(val):
             return datetime.fromisoformat(val) if val else None
 
+        def parse_date(val):
+            return date.fromisoformat(val) if val else None
+
         # Restore Users
         for u_data in data.get('users', []):
-            u = User(**{k: v for k, v in u_data.items() if k not in ['created_at', 'ccp_last_changed', 'instagram_last_changed', 'tiktok_last_changed', 'membership_expires_at']})
+            u = User(**{k: v for k, v in u_data.items() if k not in ['created_at', 'ccp_last_changed', 'instagram_last_changed', 'tiktok_last_changed', 'membership_expires_at', 'fast_goal_last_task_date']})
             u.created_at = parse_dt(u_data.get('created_at'))
             u.ccp_last_changed = parse_dt(u_data.get('ccp_last_changed'))
             u.instagram_last_changed = parse_dt(u_data.get('instagram_last_changed'))
             u.tiktok_last_changed = parse_dt(u_data.get('tiktok_last_changed'))
             u.membership_expires_at = parse_dt(u_data.get('membership_expires_at'))
+            u.fast_goal_last_task_date = parse_date(u_data.get('fast_goal_last_task_date'))
             db.session.add(u)
         db.session.commit()
         
