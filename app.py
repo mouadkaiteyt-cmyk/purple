@@ -1551,11 +1551,14 @@ def fast_goal():
         db.session.commit()
         
     valid_referrals_count = 0
+    total_fg_referrals_count = User.query.filter_by(referred_by=current_user.id, fast_goal_activated=True).count()
     fg_referrals = User.query.filter_by(referred_by=current_user.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 20).all()
     for r in fg_referrals:
         r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 10).count()
         if r_invites >= 200:
             valid_referrals_count += 1
+            
+    inactive_referrals_count = max(0, total_fg_referrals_count - valid_referrals_count)
             
     # Fetch uncompleted tasks for fast goal
     completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
@@ -1583,7 +1586,7 @@ def fast_goal():
     remaining_slots = max(0, 10 - current_user.fast_goal_tasks_today)
     tasks_to_show = available_tasks[:remaining_slots]
             
-    return render_template('fast_goal.html', user=current_user, valid_referrals_count=valid_referrals_count, tasks=tasks_to_show)
+    return render_template('fast_goal.html', user=current_user, valid_referrals_count=valid_referrals_count, inactive_referrals_count=inactive_referrals_count, tasks=tasks_to_show)
 
 @app.route('/fast_goal/activate', methods=['POST'])
 @login_required

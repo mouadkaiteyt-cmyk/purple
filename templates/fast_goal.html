@@ -19,7 +19,7 @@
     </div>
 
     <!-- Progress Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Invites Progress -->
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
             <div>
@@ -29,20 +29,40 @@
                     </div>
                     <div>
                         <h3 class="text-xl font-bold text-slate-900">الدعوات النشطة المطلوبة</h3>
-                        <p class="text-xs text-slate-500 mt-1">ادعُ 400 شخص مع تفعيل الميزة واتمام 50 بالمئة من نشاطها</p>
+                        <p class="text-xs text-slate-500 mt-1 line-clamp-2">ادعُ 400 شخص مع تفعيل الميزة واتمام 50 بالمئة من نشاطها</p>
                     </div>
                 </div>
                 
-                <div class="flex justify-between items-baseline mb-2">
-                    <span class="text-3xl font-extrabold text-blue-600">{{ valid_referrals_count }}</span>
+                <div class="flex justify-between items-baseline mb-2" dir="ltr">
                     <span class="text-slate-400 font-medium">/ 400</span>
+                    <span class="text-3xl font-extrabold text-blue-600">{{ valid_referrals_count }}</span>
                 </div>
-                <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden">
+                <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden" dir="ltr">
                     <div class="bg-blue-500 h-3 rounded-full transition-all duration-1000 relative" style="width: {{ [valid_referrals_count / 4, 100]|min }}%">
                         <div class="absolute inset-0 bg-white/20"></div>
                     </div>
                 </div>
                 <p class="text-xs text-slate-400 text-center">{{ [valid_referrals_count / 4, 100]|min }}% مكتمل</p>
+            </div>
+        </div>
+
+        <!-- Inactive Invites -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900">دعوات غير نشطة</h3>
+                        <p class="text-xs text-slate-500 mt-1 line-clamp-2">دعوات لم تستكمل الشروط (تفعيل الهدف السريع أو عدد المهام)</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center items-baseline mb-2">
+                    <span class="text-3xl font-extrabold text-amber-600">{{ inactive_referrals_count }}</span>
+                </div>
+                <p class="text-xs text-slate-400 text-center mt-6">دعوة قيد الانتظار</p>
             </div>
         </div>
 
@@ -55,15 +75,15 @@
                     </div>
                     <div>
                         <h3 class="text-xl font-bold text-slate-900">المهام السريعة</h3>
-                        <p class="text-sm text-slate-500">أنجز 100 مهمة (الحد الأقصى 10 يومياً)</p>
+                        <p class="text-xs text-slate-500 mt-1 line-clamp-2">أنجز 100 مهمة (الحد الأقصى 10 يومياً)</p>
                     </div>
                 </div>
                 
-                <div class="flex justify-between items-baseline mb-2">
-                    <span class="text-3xl font-extrabold text-emerald-600">{{ user.fast_goal_tasks_completed }}</span>
+                <div class="flex justify-between items-baseline mb-2" dir="ltr">
                     <span class="text-slate-400 font-medium">/ 100</span>
+                    <span class="text-3xl font-extrabold text-emerald-600">{{ user.fast_goal_tasks_completed }}</span>
                 </div>
-                <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden">
+                <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden" dir="ltr">
                     <div class="bg-emerald-500 h-3 rounded-full transition-all duration-1000 relative" style="width: {{ [user.fast_goal_tasks_completed, 100]|min }}%">
                         <div class="absolute inset-0 bg-white/20"></div>
                     </div>
@@ -117,8 +137,8 @@
 
         <div class="space-y-3">
             <p class="text-sm text-slate-600 mb-4 bg-blue-50 p-3 rounded-xl border border-blue-100 flex items-center">
-                <svg class="w-5 h-5 ml-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <strong class="ml-1 text-blue-700">توضيح:</strong> قم بمتابعة الحساب سريعاً وارجع للمنصة واضغط "تمت المهمة".
+                <svg class="w-5 h-5 ml-2 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="leading-snug"><strong class="text-blue-700">توضيح:</strong> قم بمتابعة الحساب سريعاً وارجع للمنصة واضغط "تمت المهمة".</span>
             </p>
             
             {% if tasks %}
