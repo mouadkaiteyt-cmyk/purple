@@ -908,8 +908,7 @@ def complete_task(task_id):
         if current_count >= task.max_completions:
             db.session.delete(task)
             db.session.commit()
-    
-    flash(f'تم إنجاز المهمة بنجاح! تمت إضافة {reward}$ إلى رصيدك.', 'success')
+
     return redirect(url_for('tasks'))
 
 @app.route('/store')

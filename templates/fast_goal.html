@@ -162,11 +162,14 @@
                                 زيارة
                             </a>
                             {% endif %}
-                            <form action="{{ url_for('complete_fast_goal_task', task_id=task.id) }}" method="POST" onsubmit="return checkVisited(event, '{{ task.id }}')" class="m-0 flex-1 sm:flex-none">
-                                <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl transition-colors shadow-sm w-full">
-                                    تمت المهمة
-                                </button>
-                            </form>
+                            <div class="flex flex-col flex-1 sm:flex-none">
+                                <form action="{{ url_for('complete_fast_goal_task', task_id=task.id) }}" method="POST" onsubmit="return checkVisited(event, '{{ task.id }}', '{{ task.link|default('') }}')" class="m-0">
+                                    <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl transition-colors shadow-sm w-full">
+                                        تمت المهمة
+                                    </button>
+                                </form>
+                                <span id="msg-{{ task.id }}" class="hidden text-rose-500 text-xs font-bold mt-2 text-center whitespace-nowrap"></span>
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
@@ -197,25 +200,29 @@
         toast.textContent = message;
         document.body.appendChild(toast);
         
-        // Animate in
         setTimeout(() => {
             toast.classList.remove('translate-y-10', 'opacity-0');
         }, 10);
         
-        // Remove after 3 seconds
         setTimeout(() => {
             toast.classList.add('translate-y-10', 'opacity-0');
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
 
-    function checkVisited(event, taskId) {
-        if (!visitedTasks.has(taskId)) {
+    function checkVisited(event, taskId, hasLink) {
+        if (hasLink && !visitedTasks.has(taskId)) {
             event.preventDefault();
-            showToast('يرجى زيارة الحساب والمتابعة لإتمام المهمة', 'danger');
+            const msgEl = document.getElementById('msg-' + taskId);
+            if (msgEl) {
+                msgEl.textContent = 'يرجى فتح رابط المهمة وانجازها';
+                msgEl.classList.remove('hidden');
+                setTimeout(() => {
+                    msgEl.classList.add('hidden');
+                }, 3000);
+            }
             return false;
         }
-        // Save scroll pos before submitting
         sessionStorage.setItem('fastGoalScrollPos', window.scrollY);
         return true;
     }

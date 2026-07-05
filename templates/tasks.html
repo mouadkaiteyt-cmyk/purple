@@ -64,19 +64,22 @@
                     
                     {% if task.id not in completed_task_ids %}
                         <div class="flex flex-col items-end">
-                            <form action="{{ url_for('complete_task', task_id=task.id) }}" method="POST" onsubmit="return checkTaskOpened('{{ task.id }}', '{{ task.link|default('') }}', 'msg-{{ task.id }}');">
-                                <button type="submit" class="bg-purple-600 text-white px-5 py-2.5 rounded-xl text-sm hover:bg-purple-700 transition shadow-sm hover:shadow-md font-bold flex items-center">
+                            <form action="{{ url_for('complete_task', task_id=task.id) }}" method="POST" onsubmit="return handleTaskSubmit(event, '{{ task.id }}', '{{ task.link|default('') }}');">
+                                <button id="btn-{{ task.id }}" type="submit" class="bg-purple-600 text-white px-5 py-2.5 rounded-xl text-sm hover:bg-purple-700 transition shadow-sm hover:shadow-md font-bold flex items-center">
                                     <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    تم الانجاز
+                                    <span id="btn-text-{{ task.id }}">تم الانجاز</span>
                                 </button>
                             </form>
                             <span id="msg-{{ task.id }}" class="hidden text-rose-500 text-xs font-bold mt-2 whitespace-nowrap"></span>
                         </div>
                     {% else %}
-                        <button disabled class="bg-slate-50 text-slate-400 px-5 py-2.5 rounded-xl text-sm cursor-not-allowed font-bold flex items-center border border-slate-100">
-                            <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            تمت الإضافة
-                        </button>
+                        <div class="flex flex-col items-end">
+                            <button disabled class="bg-slate-50 text-slate-400 px-5 py-2.5 rounded-xl text-sm cursor-not-allowed font-bold flex items-center border border-slate-100">
+                                <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                تمت الإضافة
+                            </button>
+                            <span class="text-emerald-500 text-xs font-bold mt-2 whitespace-nowrap">تم انجاز المهمة بنجاح</span>
+                        </div>
                     {% endif %}
                 </div>
             </div>
@@ -97,19 +100,33 @@
         openedTasks.add(taskId);
     }
     
-    function checkTaskOpened(taskId, hasLink, msgId) {
+    function handleTaskSubmit(event, taskId, hasLink) {
         if (hasLink && !openedTasks.has(taskId)) {
-            const msgEl = document.getElementById(msgId);
+            const msgEl = document.getElementById('msg-' + taskId);
             if (msgEl) {
                 msgEl.textContent = 'يرجى فتح رابط المهمة وانجازها';
-                msgEl.classList.remove('hidden');
+                msgEl.classList.remove('hidden', 'text-emerald-500');
+                msgEl.classList.add('text-rose-500');
                 setTimeout(() => {
                     msgEl.classList.add('hidden');
                 }, 3000);
             }
+            event.preventDefault();
             return false;
         }
+        sessionStorage.setItem('tasksScrollPos', window.scrollY);
         return true;
     }
+
+    window.addEventListener('load', function() {
+        const scrollPos = sessionStorage.getItem('tasksScrollPos');
+        if (scrollPos) {
+            window.scrollTo({
+                top: parseInt(scrollPos),
+                behavior: 'instant'
+            });
+            sessionStorage.removeItem('tasksScrollPos');
+        }
+    });
 </script>
 {% endblock %}
