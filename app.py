@@ -1599,8 +1599,28 @@ def fast_goal():
         
     remaining_slots = max(0, 10 - current_user.fast_goal_tasks_today)
     tasks_to_show = available_tasks[:remaining_slots]
-            
-    return render_template('fast_goal.html', user=current_user, valid_referrals_count=valid_referrals_count, inactive_referrals_count=inactive_referrals_count, tasks=tasks_to_show)
+
+    # Include tasks completed today to show them as completed
+    today = datetime.utcnow().date()
+    today_completions = CompletedTask.query.filter(
+        CompletedTask.user_id == current_user.id,
+        db.func.date(CompletedTask.completed_at) == today
+    ).all()
+    today_completed_task_ids = [ct.task_id for ct in today_completions]
+    
+    if today_completed_task_ids:
+        today_completed_tasks = Task.query.filter(Task.id.in_(today_completed_task_ids)).all()
+    else:
+        today_completed_tasks = []
+
+    all_tasks_to_show = tasks_to_show + today_completed_tasks
+
+    return render_template('fast_goal.html', 
+                           user=current_user, 
+                           valid_referrals_count=valid_referrals_count, 
+                           inactive_referrals_count=inactive_referrals_count, 
+                           tasks=all_tasks_to_show,
+                           completed_task_ids=completed_task_ids)
 
 @app.route('/fast_goal/activate', methods=['POST'])
 @login_required

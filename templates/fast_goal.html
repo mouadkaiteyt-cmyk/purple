@@ -157,19 +157,29 @@
                         </div>
                         
                         <div class="flex gap-2 shrink-0 w-full sm:w-auto">
-                            {% if task.link %}
-                            <a href="{{ task.link }}" target="_blank" onclick="markVisited('{{ task.id }}')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors text-center flex-1 sm:flex-none">
-                                زيارة
-                            </a>
-                            {% endif %}
-                            <div class="flex flex-col flex-1 sm:flex-none">
-                                <form action="{{ url_for('complete_fast_goal_task', task_id=task.id) }}" method="POST" onsubmit="return checkVisited(event, '{{ task.id }}', '{{ task.link|default('') }}')" class="m-0">
-                                    <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl transition-colors shadow-sm w-full">
-                                        تمت المهمة
+                            {% if task.id not in completed_task_ids %}
+                                {% if task.link %}
+                                <a href="{{ task.link }}" target="_blank" onclick="markVisited('{{ task.id }}')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors text-center flex-1 sm:flex-none">
+                                    زيارة
+                                </a>
+                                {% endif %}
+                                <div class="flex flex-col flex-1 sm:flex-none">
+                                    <form action="{{ url_for('complete_fast_goal_task', task_id=task.id) }}" method="POST" onsubmit="return checkVisited(event, '{{ task.id }}', '{{ task.link|default('') }}')" class="m-0">
+                                        <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl transition-colors shadow-sm w-full">
+                                            تمت المهمة
+                                        </button>
+                                    </form>
+                                    <span id="msg-{{ task.id }}" class="hidden text-rose-500 text-xs font-bold mt-2 text-center whitespace-nowrap"></span>
+                                </div>
+                            {% else %}
+                                <div class="flex flex-col flex-1 sm:flex-none items-center justify-center">
+                                    <button disabled class="bg-slate-50 text-slate-400 px-5 py-2.5 rounded-xl text-sm cursor-not-allowed font-bold flex items-center justify-center border border-slate-100 w-full">
+                                        <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        تمت الإضافة
                                     </button>
-                                </form>
-                                <span id="msg-{{ task.id }}" class="hidden text-rose-500 text-xs font-bold mt-2 text-center whitespace-nowrap"></span>
-                            </div>
+                                    <span class="text-emerald-500 text-xs font-bold mt-2 text-center whitespace-nowrap">تم انجاز المهمة بنجاح</span>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 {% endfor %}
@@ -187,27 +197,6 @@
 
     function markVisited(taskId) {
         visitedTasks.add(taskId);
-    }
-
-    function showToast(message, type = 'danger') {
-        const toast = document.createElement('div');
-        toast.className = `fixed bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl shadow-lg font-bold text-white z-50 transition-all duration-300 translate-y-10 opacity-0`;
-        if (type === 'danger') {
-            toast.classList.add('bg-rose-500');
-        } else {
-            toast.classList.add('bg-emerald-500');
-        }
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.classList.remove('translate-y-10', 'opacity-0');
-        }, 10);
-        
-        setTimeout(() => {
-            toast.classList.add('translate-y-10', 'opacity-0');
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
     }
 
     function checkVisited(event, taskId, hasLink) {
@@ -235,7 +224,6 @@
                 behavior: 'instant'
             });
             sessionStorage.removeItem('fastGoalScrollPos');
-            showToast('تم إنجاز المهمة بنجاح!', 'success');
         }
     });
 </script>
