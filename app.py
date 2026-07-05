@@ -74,6 +74,7 @@ class Task(db.Model):
     min_age = db.Column(db.Integer, nullable=True)
     max_age = db.Column(db.Integer, nullable=True)
     is_boosted = db.Column(db.Boolean, default=False)
+    is_fast_goal = db.Column(db.Boolean, default=False)
 
 class CompletedTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -221,6 +222,8 @@ with app.app_context():
                 db.session.execute(text('ALTER TABLE task ADD COLUMN max_age INTEGER'))
             if 'is_boosted' not in columns:
                 db.session.execute(text('ALTER TABLE task ADD COLUMN is_boosted BOOLEAN DEFAULT 0'))
+            if 'is_fast_goal' not in columns:
+                db.session.execute(text('ALTER TABLE task ADD COLUMN is_fast_goal BOOLEAN DEFAULT 0'))
         if 'completed_task' in inspector.get_table_names():
             columns = [col['name'] for col in inspector.get_columns('completed_task')]
             if 'completed_at' not in columns:
@@ -435,8 +438,9 @@ def dashboard():
             pending_referrals_count += 1
             
     referrals_count = len(all_referred)
-    all_tasks = Task.query.all()
-    completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
+    all_tasks = Task.query.filter_by(is_fast_goal=False).all()
+    all_tasks_ids = [t.id for t in all_tasks]
+    completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all() if ct.task_id in all_tasks_ids]
     
     # Calculate tasks stats
     total_tasks = len(all_tasks)
@@ -783,9 +787,10 @@ def tasks():
     
     # Get recent completions in last 24 hours
     twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
-    recent_completions = CompletedTask.query.filter(
+    recent_completions = CompletedTask.query.join(Task).filter(
         CompletedTask.user_id == current_user.id,
-        CompletedTask.completed_at >= twenty_four_hours_ago
+        CompletedTask.completed_at >= twenty_four_hours_ago,
+        Task.is_fast_goal == False
     ).count()
     
     config = AppConfig.query.first()
@@ -802,7 +807,7 @@ def tasks():
     available_slots = max(0, limit - recent_completions)
     
     # Build query for available tasks
-    query = Task.query
+    query = Task.query.filter_by(is_fast_goal=False)
     if completed_task_ids:
         query = query.filter(~Task.id.in_(completed_task_ids))
         
@@ -829,7 +834,7 @@ def tasks():
     uncompleted_tasks = uncompleted_tasks[:available_slots]
     
     if completed_task_ids:
-        completed_tasks = Task.query.filter(Task.id.in_(completed_task_ids)).all()
+        completed_tasks = Task.query.filter(Task.id.in_(completed_task_ids), Task.is_fast_goal==False).all()
     else:
         completed_tasks = []
         
@@ -846,9 +851,10 @@ def tasks():
 def complete_task(task_id):
     # Verify daily limit first
     twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
-    recent_completions = CompletedTask.query.filter(
+    recent_completions = CompletedTask.query.join(Task).filter(
         CompletedTask.user_id == current_user.id,
-        CompletedTask.completed_at >= twenty_four_hours_ago
+        CompletedTask.completed_at >= twenty_four_hours_ago,
+        Task.is_fast_goal == False
     ).count()
     
     config = AppConfig.query.first()
@@ -858,6 +864,9 @@ def complete_task(task_id):
         return redirect(url_for('tasks'))
 
     task = Task.query.get_or_404(task_id)
+    if task.is_fast_goal:
+        flash('هذه المهمة تابعة للهدف السريع ولا يمكن إنجازها هنا.', 'danger')
+        return redirect(url_for('tasks'))
     
     # Check max completions limit
     if task.max_completions:
@@ -1222,6 +1231,8 @@ def admin_add_task():
     max_age = request.form.get('max_age')
     max_age = int(max_age) if max_age else None
     
+    is_fast_goal = request.form.get('is_fast_goal') == 'true'
+    
     new_task = Task(
         title=title, 
         description=description, 
@@ -1229,7 +1240,8 @@ def admin_add_task():
         max_completions=max_completions,
         target_gender=target_gender,
         min_age=min_age,
-        max_age=max_age
+        max_age=max_age,
+        is_fast_goal=is_fast_goal
     )
     db.session.add(new_task)
     db.session.commit()
@@ -1272,6 +1284,10 @@ def admin_update_task(task_id):
     
     max_age = request.form.get('max_age')
     task.max_age = int(max_age) if max_age else None
+    
+    is_fast_goal = request.form.get('is_fast_goal')
+    if is_fast_goal is not None:
+        task.is_fast_goal = is_fast_goal == 'true'
     
     db.session.commit()
     flash('تم تحديث المهمة بنجاح.', 'success')
@@ -1576,7 +1592,7 @@ def fast_goal():
             
     # Fetch uncompleted tasks for fast goal
     completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
-    query = Task.query
+    query = Task.query.filter_by(is_fast_goal=True)
     if completed_task_ids:
         query = query.filter(~Task.id.in_(completed_task_ids))
         
@@ -1609,7 +1625,7 @@ def fast_goal():
     today_completed_task_ids = [ct.task_id for ct in today_completions]
     
     if today_completed_task_ids:
-        today_completed_tasks = Task.query.filter(Task.id.in_(today_completed_task_ids)).all()
+        today_completed_tasks = Task.query.filter(Task.id.in_(today_completed_task_ids), Task.is_fast_goal==True).all()
     else:
         today_completed_tasks = []
 
@@ -1659,6 +1675,9 @@ def complete_fast_goal_task(task_id):
         return redirect(url_for('fast_goal'))
         
     task = Task.query.get_or_404(task_id)
+    if not task.is_fast_goal:
+        flash('هذه المهمة عادية ولا يمكن إنجازها في قسم الهدف السريع.', 'danger')
+        return redirect(url_for('fast_goal'))
     
     # Check max completions limit
     if task.max_completions:
