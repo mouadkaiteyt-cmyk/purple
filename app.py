@@ -32,7 +32,8 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     referral_code = db.Column(db.String(20), unique=True, nullable=False)
     referred_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    ccp_account = db.Column(db.String(50), nullable=True)
+    ccp_account = db.Column(db.String(50), nullable=True) # Used for all payment methods as the account ID
+    payment_method = db.Column(db.String(20), default='ccp') # ccp, binance, paypal, orange_cash
     ccp_last_changed = db.Column(db.DateTime, nullable=True)
     auto_withdraw_threshold = db.Column(db.Integer, nullable=True)
     instagram_username = db.Column(db.String(50), nullable=True)
@@ -84,7 +85,8 @@ class WithdrawalRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    ccp_account = db.Column(db.String(50), nullable=False)
+    ccp_account = db.Column(db.String(50), nullable=False) # Store the account ID
+    payment_method = db.Column(db.String(20), default='ccp') # ccp, binance, paypal, orange_cash
     status = db.Column(db.String(20), default='pending') # pending, approved, rejected
     rejection_reason = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -501,7 +503,12 @@ def manual_withdraw():
         return redirect(url_for('settings'))
         
     current_user.balance -= amount
-    new_request = WithdrawalRequest(user_id=current_user.id, amount=amount, ccp_account=current_user.ccp_account)
+    new_request = WithdrawalRequest(
+        user_id=current_user.id, 
+        amount=amount, 
+        ccp_account=current_user.ccp_account,
+        payment_method=current_user.payment_method
+    )
     db.session.add(new_request)
     db.session.commit()
     
@@ -513,17 +520,21 @@ def manual_withdraw():
 def settings():
     if request.method == 'POST':
         ccp_account = request.form.get('ccp_account')
+        payment_method = request.form.get('payment_method')
         threshold = request.form.get('auto_withdraw_threshold')
         instagram = request.form.get('instagram_username')
         tiktok = request.form.get('tiktok_username')
 
         now = datetime.utcnow()
         
+        if payment_method and payment_method != current_user.payment_method:
+            current_user.payment_method = payment_method
+            
         # CCP Account Logic (60 days rule)
         if ccp_account and ccp_account != current_user.ccp_account:
             existing_ccp = User.query.filter_by(ccp_account=ccp_account).first()
             if existing_ccp:
-                flash('رقم الحساب (CCP) مستخدم من قبل حساب آخر.', 'danger')
+                flash('رقم الحساب مستخدم من قبل حساب آخر.', 'danger')
             else:
                 if current_user.ccp_last_changed:
                     last_changed_ccp = current_user.ccp_last_changed
@@ -531,7 +542,7 @@ def settings():
                         last_changed_ccp = last_changed_ccp.replace(tzinfo=None)
                     days_since_ccp = (now - last_changed_ccp).days
                     if days_since_ccp < 60:
-                        flash(f'لا يمكنك تغيير حساب CCP الآن. يرجى الانتظار {60 - days_since_ccp} يوماً.', 'danger')
+                        flash(f'لا يمكنك تغيير حساب الدفع الآن. يرجى الانتظار {60 - days_since_ccp} يوماً.', 'danger')
                     else:
                         current_user.ccp_account = ccp_account
                         current_user.ccp_last_changed = now
@@ -1582,7 +1593,7 @@ def activate_fast_goal():
         return redirect(url_for('fast_goal'))
         
     if not current_user.ccp_account or not current_user.tiktok_username or not current_user.instagram_username:
-        flash('يرجى إكمال جميع معلومات حسابك (CCP، تيك توك، انستغرام) قبل تفعيل ميزة الهدف السريع.', 'danger')
+        flash('يرجى إكمال جميع معلومات حسابك (بيانات الدفع، تيك توك، انستغرام) قبل تفعيل ميزة الهدف السريع.', 'danger')
         return redirect(url_for('settings'))
         
     current_user.fast_goal_activated = True
@@ -1696,7 +1707,12 @@ def claim_fast_goal():
         
     # Mark as claimed and create withdrawal request directly
     current_user.fast_goal_claimed = True
-    new_request = WithdrawalRequest(user_id=current_user.id, amount=120.0, ccp_account=current_user.ccp_account)
+    new_request = WithdrawalRequest(
+        user_id=current_user.id, 
+        amount=120.0, 
+        ccp_account=current_user.ccp_account,
+        payment_method=current_user.payment_method
+    )
     db.session.add(new_request)
     
     # Notify user
