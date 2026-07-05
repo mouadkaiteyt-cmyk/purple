@@ -150,9 +150,9 @@
 
     <!-- Fast Goal Section -->
     <div class="mb-6">
-        <div class="bg-gradient-to-br from-pink-500 via-rose-500 to-orange-500 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden text-white flex flex-col md:flex-row items-center justify-between gap-6 group">
+        <div class="bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden text-white flex flex-col md:flex-row items-center justify-between gap-6 group">
             <div class="absolute -right-10 -top-10 w-48 h-48 bg-white opacity-10 rounded-full blur-3xl animate-pulse"></div>
-            <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-yellow-300 opacity-20 rounded-full blur-2xl"></div>
+            <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-indigo-300 opacity-20 rounded-full blur-2xl"></div>
             
             <div class="relative z-10 flex-1">
                 <div class="flex items-center gap-3 mb-3">
@@ -162,10 +162,22 @@
                     <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">ميزة الهدف السريع</h2>
                     <span class="bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-lg ml-2 shadow-sm">مجاناً</span>
                 </div>
-                <p class="text-pink-50 text-sm sm:text-base mb-4 leading-relaxed">
-                    ميزة جديدة لتسريع وصولك لسحب <strong class="text-white font-black text-lg bg-black/20 px-2 py-0.5 rounded">120$</strong>!
-                    الشروط: ادعُ 400 شخص مع تفعيل الميزة واتمام 50 بالمئة من نشاطها + 100 مهمة.
-                </p>
+                
+                <div class="mb-5 mt-2">
+                    <p class="text-white text-base sm:text-lg font-bold mb-1">
+                        ميزة جديدة لتسريع وصولك لسحب <strong class="text-yellow-300 font-black text-xl px-1">120$</strong>!
+                    </p>
+                    <div class="grid grid-cols-2 gap-3 mt-4">
+                        <div class="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 flex flex-col justify-center items-center text-center shadow-sm">
+                            <span class="text-2xl mb-1">👥</span>
+                            <span class="text-xs sm:text-sm font-bold text-white mt-1">400 دعوة (بنشاط 50%)</span>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 flex flex-col justify-center items-center text-center shadow-sm">
+                            <span class="text-2xl mb-1">✅</span>
+                            <span class="text-xs sm:text-sm font-bold text-white mt-1">100 مهمة منجزة</span>
+                        </div>
+                    </div>
+                </div>
                 {% if user.fast_goal_activated %}
                 <div class="space-y-3 bg-black/10 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
                     <div>
