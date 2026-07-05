@@ -413,6 +413,14 @@ def dashboard():
         current_user.fast_goal_last_task_date = datetime.utcnow().date()
         db.session.commit()
 
+    fast_goal_valid_referrals = 0
+    if current_user.fast_goal_activated:
+        fg_referrals = User.query.filter_by(referred_by=current_user.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 20).all()
+        for r in fg_referrals:
+            r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).count()
+            if r_invites >= 200:
+                fast_goal_valid_referrals += 1
+
     all_referred = User.query.filter_by(referred_by=current_user.id).all()
     pending_referrals_count = 0
     active_referrals_count = 0
@@ -443,6 +451,7 @@ def dashboard():
     return render_template('dashboard.html', 
                            user=current_user, 
                            referrals_count=referrals_count,
+                           fast_goal_valid_referrals=fast_goal_valid_referrals,
                            active_referrals_count=active_referrals_count,
                            pending_referrals_count=pending_referrals_count,
                            tasks=all_tasks,
@@ -1530,8 +1539,14 @@ def fast_goal():
         current_user.fast_goal_last_task_date = datetime.utcnow().date()
         db.session.commit()
         
-    invites_count = User.query.filter_by(referred_by=current_user.id).count()
-    return render_template('fast_goal.html', user=current_user, invites_count=invites_count)
+    valid_referrals_count = 0
+    fg_referrals = User.query.filter_by(referred_by=current_user.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 20).all()
+    for r in fg_referrals:
+        r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).count()
+        if r_invites >= 200:
+            valid_referrals_count += 1
+            
+    return render_template('fast_goal.html', user=current_user, valid_referrals_count=valid_referrals_count)
 
 @app.route('/fast_goal/activate', methods=['POST'])
 @login_required
@@ -1586,9 +1601,15 @@ def claim_fast_goal():
         flash('لقد قمت بسحب مكافأة الهدف السريع مسبقاً.', 'info')
         return redirect(url_for('fast_goal'))
         
-    invites_count = User.query.filter_by(referred_by=current_user.id).count()
-    if invites_count < 200 or current_user.fast_goal_tasks_completed < 100:
-        flash('لم تكمل شروط الهدف السريع بعد (200 دعوة + 100 مهمة).', 'danger')
+    valid_referrals_count = 0
+    fg_referrals = User.query.filter_by(referred_by=current_user.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 20).all()
+    for r in fg_referrals:
+        r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).count()
+        if r_invites >= 200:
+            valid_referrals_count += 1
+            
+    if valid_referrals_count < 400 or current_user.fast_goal_tasks_completed < 100:
+        flash('لم تكمل شروط الهدف السريع بعد (400 دعوة نشطة + 100 مهمة).', 'danger')
         return redirect(url_for('fast_goal'))
         
     existing_request = WithdrawalRequest.query.filter_by(user_id=current_user.id, status='pending').first()

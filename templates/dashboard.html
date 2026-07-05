@@ -164,17 +164,17 @@
                 </div>
                 <p class="text-pink-50 text-sm sm:text-base mb-4 leading-relaxed">
                     ميزة جديدة لتسريع وصولك لسحب <strong class="text-white font-black text-lg bg-black/20 px-2 py-0.5 rounded">120$</strong>!
-                    الشروط: إكمال معلومات حسابك + 200 دعوة فقط + إنجاز 100 مهمة سريعة (10 مهام يومياً).
+                    الشروط: إكمال معلومات حسابك + 400 دعوة نشطة + إنجاز 100 مهمة سريعة (10 مهام يومياً).
                 </p>
                 {% if user.fast_goal_activated %}
                 <div class="space-y-3 bg-black/10 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
                     <div>
                         <div class="flex justify-between text-xs font-bold mb-1">
-                            <span>الدعوات المطلوبة (200)</span>
-                            <span>{{ referrals_count }} / 200</span>
+                            <span>الدعوات النشطة (400)</span>
+                            <span>{{ fast_goal_valid_referrals }} / 400</span>
                         </div>
                         <div class="w-full bg-black/20 rounded-full h-2">
-                            <div class="bg-yellow-400 h-2 rounded-full transition-all duration-1000" style="width: {{ [referrals_count / 2, 100]|min }}%"></div>
+                            <div class="bg-yellow-400 h-2 rounded-full transition-all duration-1000" style="width: {{ [fast_goal_valid_referrals / 4, 100]|min }}%"></div>
                         </div>
                     </div>
                     <div>

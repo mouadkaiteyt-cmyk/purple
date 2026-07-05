@@ -28,21 +28,21 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-slate-900">الدعوات المطلوبة</h3>
-                        <p class="text-sm text-slate-500">ادعُ 200 شخص (لا يشترط إكمالهم للمهام)</p>
+                        <h3 class="text-xl font-bold text-slate-900">الدعوات النشطة المطلوبة</h3>
+                        <p class="text-xs text-slate-500 mt-1">ادعُ 400 شخص (يجب أن يفعلوا الميزة + يكملوا 20 مهمة + يدعوا 200 شخص للميزة)</p>
                     </div>
                 </div>
                 
                 <div class="flex justify-between items-baseline mb-2">
-                    <span class="text-3xl font-extrabold text-blue-600">{{ invites_count }}</span>
-                    <span class="text-slate-400 font-medium">/ 200</span>
+                    <span class="text-3xl font-extrabold text-blue-600">{{ valid_referrals_count }}</span>
+                    <span class="text-slate-400 font-medium">/ 400</span>
                 </div>
                 <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden">
-                    <div class="bg-blue-500 h-3 rounded-full transition-all duration-1000 relative" style="width: {{ [invites_count / 2, 100]|min }}%">
+                    <div class="bg-blue-500 h-3 rounded-full transition-all duration-1000 relative" style="width: {{ [valid_referrals_count / 4, 100]|min }}%">
                         <div class="absolute inset-0 bg-white/20"></div>
                     </div>
                 </div>
-                <p class="text-xs text-slate-400 text-center">{{ [invites_count / 2, 100]|min }}% مكتمل</p>
+                <p class="text-xs text-slate-400 text-center">{{ [valid_referrals_count / 4, 100]|min }}% مكتمل</p>
             </div>
         </div>
 
@@ -74,7 +74,7 @@
     </div>
 
     <!-- Claim Button (Shows when complete) -->
-    {% if invites_count >= 200 and user.fast_goal_tasks_completed >= 100 %}
+    {% if valid_referrals_count >= 400 and user.fast_goal_tasks_completed >= 100 %}
         {% if not user.fast_goal_claimed %}
         <div class="bg-white rounded-3xl p-8 shadow-sm border-2 border-yellow-400 text-center relative overflow-hidden group">
             <div class="absolute inset-0 bg-gradient-to-r from-yellow-50 via-white to-yellow-50 opacity-50"></div>
