@@ -80,6 +80,7 @@ class CompletedTask(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
     completed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completion_type = db.Column(db.String(20), default='normal') # 'normal' or 'fast_goal'
 
 class WithdrawalRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -225,8 +226,9 @@ with app.app_context():
             columns = [col['name'] for col in inspector.get_columns('completed_task')]
             if 'completed_at' not in columns:
                 db.session.execute(text('ALTER TABLE completed_task ADD COLUMN completed_at TIMESTAMP'))
-                # Update existing records to current time so they don't have NULL
                 db.session.execute(text("UPDATE completed_task SET completed_at = CURRENT_TIMESTAMP WHERE completed_at IS NULL"))
+            if 'completion_type' not in columns:
+                db.session.execute(text("ALTER TABLE completed_task ADD COLUMN completion_type VARCHAR(20) DEFAULT 'normal'"))
         if 'withdrawal_request' in inspector.get_table_names():
             columns = [col['name'] for col in inspector.get_columns('withdrawal_request')]
             if 'rejection_reason' not in columns:
@@ -436,11 +438,11 @@ def dashboard():
             
     referrals_count = len(all_referred)
     all_tasks = Task.query.all()
-    completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
+    all_completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
     
     # Calculate tasks stats
     total_tasks = len(all_tasks)
-    completed_tasks_count = len(completed_task_ids)
+    completed_tasks_count = len(all_completed_task_ids)
     
     config = AppConfig.query.first()
     notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
@@ -457,7 +459,7 @@ def dashboard():
                            active_referrals_count=active_referrals_count,
                            pending_referrals_count=pending_referrals_count,
                            tasks=all_tasks,
-                           completed_task_ids=completed_task_ids,
+                           completed_task_ids=all_completed_task_ids,
                            total_tasks=total_tasks,
                            completed_tasks_count=completed_tasks_count,
                            config=config,
@@ -779,12 +781,13 @@ def merchant_boost():
 @app.route('/tasks')
 @login_required
 def tasks():
-    completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
+    all_completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
     
     # Get recent completions in last 24 hours
     twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
     recent_completions = CompletedTask.query.filter(
         CompletedTask.user_id == current_user.id,
+        CompletedTask.completion_type == 'normal',
         CompletedTask.completed_at >= twenty_four_hours_ago
     ).count()
     
@@ -803,8 +806,8 @@ def tasks():
     
     # Build query for available tasks
     query = Task.query
-    if completed_task_ids:
-        query = query.filter(~Task.id.in_(completed_task_ids))
+    if all_completed_task_ids:
+        query = query.filter(~Task.id.in_(all_completed_task_ids))
         
     # Filter by gender
     if current_user.gender:
@@ -828,16 +831,18 @@ def tasks():
         
     uncompleted_tasks = uncompleted_tasks[:available_slots]
     
-    if completed_task_ids:
-        completed_tasks = Task.query.filter(Task.id.in_(completed_task_ids)).all()
+    normal_completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id, completion_type='normal').all()]
+
+    if normal_completed_task_ids:
+        completed_tasks = Task.query.filter(Task.id.in_(normal_completed_task_ids)).all()
     else:
         completed_tasks = []
-        
+
     all_tasks_to_show = uncompleted_tasks + completed_tasks
-    
-    return render_template('tasks.html', 
-                           tasks=all_tasks_to_show, 
-                           completed_task_ids=completed_task_ids,
+
+    return render_template('tasks.html',
+                           tasks=all_tasks_to_show,
+                           completed_task_ids=normal_completed_task_ids,
                            limit=limit,
                            recent_completions=recent_completions)
 
@@ -848,6 +853,7 @@ def complete_task(task_id):
     twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
     recent_completions = CompletedTask.query.filter(
         CompletedTask.user_id == current_user.id,
+        CompletedTask.completion_type == 'normal',
         CompletedTask.completed_at >= twenty_four_hours_ago
     ).count()
     
@@ -880,11 +886,12 @@ def complete_task(task_id):
             flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (العمر).', 'danger')
             return redirect(url_for('tasks'))
 
+    # Check if already completed
     if CompletedTask.query.filter_by(user_id=current_user.id, task_id=task.id).first():
         flash('لقد قمت بإنجاز هذه المهمة مسبقاً.', 'danger')
         return redirect(url_for('tasks'))
     
-    new_completion = CompletedTask(user_id=current_user.id, task_id=task.id)
+    new_completion = CompletedTask(user_id=current_user.id, task_id=task.id, completion_type='normal')
     db.session.add(new_completion)
     
     reward = task.reward_upgraded if current_user.is_upgraded else task.reward_normal
@@ -1575,10 +1582,10 @@ def fast_goal():
     inactive_referrals_count = max(0, total_fg_referrals_count - valid_referrals_count)
             
     # Fetch uncompleted tasks for fast goal
-    completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
+    all_completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
     query = Task.query
-    if completed_task_ids:
-        query = query.filter(~Task.id.in_(completed_task_ids))
+    if all_completed_task_ids:
+        query = query.filter(~Task.id.in_(all_completed_task_ids))
         
     if current_user.gender:
         query = query.filter((Task.target_gender == 'all') | (Task.target_gender == current_user.gender))
@@ -1604,10 +1611,11 @@ def fast_goal():
     today = datetime.utcnow().date()
     today_completions = CompletedTask.query.filter(
         CompletedTask.user_id == current_user.id,
+        CompletedTask.completion_type == 'fast_goal',
         db.func.date(CompletedTask.completed_at) == today
     ).all()
     today_completed_task_ids = [ct.task_id for ct in today_completions]
-    
+
     if today_completed_task_ids:
         today_completed_tasks = Task.query.filter(Task.id.in_(today_completed_task_ids)).all()
     else:
@@ -1615,12 +1623,13 @@ def fast_goal():
 
     all_tasks_to_show = tasks_to_show + today_completed_tasks
 
-    return render_template('fast_goal.html', 
-                           user=current_user, 
-                           valid_referrals_count=valid_referrals_count, 
-                           inactive_referrals_count=inactive_referrals_count, 
+    return render_template('fast_goal.html',
+                           user=current_user,
+                           valid_referrals_count=valid_referrals_count,
+                           inactive_referrals_count=inactive_referrals_count,
                            tasks=all_tasks_to_show,
-                           completed_task_ids=completed_task_ids)
+                           remaining_slots=remaining_slots,
+                           completed_task_ids=today_completed_task_ids)
 
 @app.route('/fast_goal/activate', methods=['POST'])
 @login_required
@@ -1685,7 +1694,7 @@ def complete_fast_goal_task(task_id):
         flash('لقد قمت بإنجاز هذه المهمة مسبقاً.', 'danger')
         return redirect(url_for('fast_goal'))
     
-    new_completion = CompletedTask(user_id=current_user.id, task_id=task.id)
+    new_completion = CompletedTask(user_id=current_user.id, task_id=task.id, completion_type='fast_goal')
     db.session.add(new_completion)
     
     current_user.fast_goal_tasks_today += 1
