@@ -1665,9 +1665,6 @@ def complete_fast_goal_task(task_id):
     new_completion = CompletedTask(user_id=current_user.id, task_id=task.id)
     db.session.add(new_completion)
     
-    reward = task.reward_upgraded if current_user.is_upgraded else task.reward_normal
-    current_user.balance += reward
-
     current_user.fast_goal_tasks_today += 1
     current_user.fast_goal_tasks_completed += 1
     
@@ -1690,7 +1687,6 @@ def complete_fast_goal_task(task_id):
             
     db.session.commit()
     
-    flash(f'تم إنجاز المهمة السريعة بنجاح! تمت إضافة {reward}$ إلى رصيدك.', 'success')
     return redirect(url_for('fast_goal'))
 
 @app.route('/fast_goal/claim', methods=['POST'])

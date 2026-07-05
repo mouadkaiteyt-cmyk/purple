@@ -158,11 +158,11 @@
                         
                         <div class="flex gap-2 shrink-0 w-full sm:w-auto">
                             {% if task.link %}
-                            <a href="{{ task.link }}" target="_blank" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors text-center flex-1 sm:flex-none">
+                            <a href="{{ task.link }}" target="_blank" onclick="markVisited('{{ task.id }}')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition-colors text-center flex-1 sm:flex-none">
                                 زيارة
                             </a>
                             {% endif %}
-                            <form action="{{ url_for('complete_fast_goal_task', task_id=task.id) }}" method="POST" class="m-0 flex-1 sm:flex-none">
+                            <form action="{{ url_for('complete_fast_goal_task', task_id=task.id) }}" method="POST" onsubmit="return checkVisited(event, '{{ task.id }}')" class="m-0 flex-1 sm:flex-none">
                                 <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl transition-colors shadow-sm w-full">
                                     تمت المهمة
                                 </button>
@@ -178,4 +178,58 @@
         </div>
     </div>
 </div>
+
+<script>
+    const visitedTasks = new Set();
+
+    function markVisited(taskId) {
+        visitedTasks.add(taskId);
+    }
+
+    function showToast(message, type = 'danger') {
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl shadow-lg font-bold text-white z-50 transition-all duration-300 translate-y-10 opacity-0`;
+        if (type === 'danger') {
+            toast.classList.add('bg-rose-500');
+        } else {
+            toast.classList.add('bg-emerald-500');
+        }
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => {
+            toast.classList.remove('translate-y-10', 'opacity-0');
+        }, 10);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.classList.add('translate-y-10', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    function checkVisited(event, taskId) {
+        if (!visitedTasks.has(taskId)) {
+            event.preventDefault();
+            showToast('يرجى زيارة الحساب والمتابعة لإتمام المهمة', 'danger');
+            return false;
+        }
+        // Save scroll pos before submitting
+        sessionStorage.setItem('fastGoalScrollPos', window.scrollY);
+        return true;
+    }
+
+    window.addEventListener('load', function() {
+        const scrollPos = sessionStorage.getItem('fastGoalScrollPos');
+        if (scrollPos) {
+            window.scrollTo({
+                top: parseInt(scrollPos),
+                behavior: 'instant'
+            });
+            sessionStorage.removeItem('fastGoalScrollPos');
+            showToast('تم إنجاز المهمة بنجاح!', 'success');
+        }
+    });
+</script>
 {% endblock %}
