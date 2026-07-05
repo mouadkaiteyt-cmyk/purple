@@ -1546,7 +1546,33 @@ def fast_goal():
         if r_invites >= 200:
             valid_referrals_count += 1
             
-    return render_template('fast_goal.html', user=current_user, valid_referrals_count=valid_referrals_count)
+    # Fetch uncompleted tasks for fast goal
+    completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
+    query = Task.query
+    if completed_task_ids:
+        query = query.filter(~Task.id.in_(completed_task_ids))
+        
+    if current_user.gender:
+        query = query.filter((Task.target_gender == 'all') | (Task.target_gender == current_user.gender))
+        
+    if current_user.age:
+        query = query.filter((Task.min_age == None) | (Task.min_age <= current_user.age))
+        query = query.filter((Task.max_age == None) | (Task.max_age >= current_user.age))
+        
+    uncompleted_tasks_raw = query.order_by(Task.is_boosted.desc(), Task.id.desc()).all()
+    
+    available_tasks = []
+    for t in uncompleted_tasks_raw:
+        if t.max_completions:
+            c_count = CompletedTask.query.filter_by(task_id=t.id).count()
+            if c_count >= t.max_completions:
+                continue
+        available_tasks.append(t)
+        
+    remaining_slots = max(0, 10 - current_user.fast_goal_tasks_today)
+    tasks_to_show = available_tasks[:remaining_slots]
+            
+    return render_template('fast_goal.html', user=current_user, valid_referrals_count=valid_referrals_count, tasks=tasks_to_show)
 
 @app.route('/fast_goal/activate', methods=['POST'])
 @login_required
@@ -1566,9 +1592,9 @@ def activate_fast_goal():
     flash('تم تفعيل ميزة الهدف السريع بنجاح!', 'success')
     return redirect(url_for('fast_goal'))
 
-@app.route('/fast_goal/complete_task', methods=['POST'])
+@app.route('/fast_goal/complete_task/<int:task_id>', methods=['POST'])
 @login_required
-def complete_fast_goal_task():
+def complete_fast_goal_task(task_id):
     if not current_user.fast_goal_activated:
         return redirect(url_for('dashboard'))
         
@@ -1584,11 +1610,62 @@ def complete_fast_goal_task():
         flash('لقد أكملت جميع مهام الهدف السريع (100 مهمة)!', 'success')
         return redirect(url_for('fast_goal'))
         
+    task = Task.query.get_or_404(task_id)
+    
+    # Check max completions limit
+    if task.max_completions:
+        c_count = CompletedTask.query.filter_by(task_id=task.id).count()
+        if c_count >= task.max_completions:
+            flash('عذراً، هذه المهمة وصلت للحد الأقصى من الإنجازات ولم تعد متاحة.', 'danger')
+            return redirect(url_for('fast_goal'))
+            
+    # Check gender targeting
+    if task.target_gender != 'all' and task.target_gender != current_user.gender:
+        flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (الجنس).', 'danger')
+        return redirect(url_for('fast_goal'))
+        
+    # Check age targeting
+    if current_user.age:
+        if task.min_age and current_user.age < task.min_age:
+            flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (العمر).', 'danger')
+            return redirect(url_for('fast_goal'))
+        if task.max_age and current_user.age > task.max_age:
+            flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (العمر).', 'danger')
+            return redirect(url_for('fast_goal'))
+
+    if CompletedTask.query.filter_by(user_id=current_user.id, task_id=task.id).first():
+        flash('لقد قمت بإنجاز هذه المهمة مسبقاً.', 'danger')
+        return redirect(url_for('fast_goal'))
+    
+    new_completion = CompletedTask(user_id=current_user.id, task_id=task.id)
+    db.session.add(new_completion)
+    
+    reward = task.reward_upgraded if current_user.is_upgraded else task.reward_normal
+    current_user.balance += reward
+
     current_user.fast_goal_tasks_today += 1
     current_user.fast_goal_tasks_completed += 1
+    
+    # Check if this user just reached 10 tasks to reward their referrer
+    user_completed_count = CompletedTask.query.filter_by(user_id=current_user.id).count()
+    if user_completed_count == 10 and current_user.referred_by:
+        referrer = User.query.get(current_user.referred_by)
+        if referrer:
+            if referrer.is_upgraded:
+                referrer.balance += 0.2
+            else:
+                referrer.balance += 0.05
+            db.session.commit()
+            
+    # If boosted task and reached max_completions, delete it
+    if task.is_boosted and task.max_completions:
+        current_count = CompletedTask.query.filter_by(task_id=task.id).count()
+        if current_count >= task.max_completions:
+            db.session.delete(task)
+            
     db.session.commit()
     
-    flash('تم إنجاز المهمة السريعة بنجاح!', 'success')
+    flash(f'تم إنجاز المهمة السريعة بنجاح! تمت إضافة {reward}$ إلى رصيدك.', 'success')
     return redirect(url_for('fast_goal'))
 
 @app.route('/fast_goal/claim', methods=['POST'])
