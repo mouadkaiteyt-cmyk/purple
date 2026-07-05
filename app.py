@@ -996,27 +996,20 @@ def buy_product(product_id):
     if current_user.referred_by:
         referrer = User.query.get(current_user.referred_by)
         if referrer:
-            give_reward = True
-            if referrer.fast_goal_activated and not referrer.is_upgraded:
-                give_reward = False
-                
-            if give_reward:
-                if referrer.is_upgraded:
-                    reward = product.price * 0.40
-                else:
-                    reward = product.price * 0.20
-                referrer.balance += reward
-                
-                # Notify referrer
-                notif = Notification(user_id=referrer.id, message=f'حصلت على عمولة {reward:.2f}$ من شراء أحد إحالاتك لمنتج في المتجر.', type='success')
-                db.session.add(notif)
+            if referrer.is_upgraded:
+                reward = product.price * 0.40
             else:
-                reward = 0
+                reward = product.price * 0.20
+            referrer.balance += reward
+            
+            # Notify referrer
+            notif = Notification(user_id=referrer.id, message=f'حصلت على عمولة {reward:.2f}$ من شراء أحد إحالاتك لمنتج في المتجر.', type='success')
+            db.session.add(notif)
             
     # Add revenue to total platform revenue (remaining percentage)
     config = AppConfig.query.first()
     if config:
-        if current_user.referred_by and referrer and give_reward:
+        if current_user.referred_by and referrer:
             platform_revenue = product.price - reward
         else:
             platform_revenue = product.price
