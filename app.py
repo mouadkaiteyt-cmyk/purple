@@ -44,6 +44,12 @@ class User(UserMixin, db.Model):
     gender = db.Column(db.String(10), default='male') # male, female
     age = db.Column(db.Integer, default=18)
 
+    fast_goal_activated = db.Column(db.Boolean, default=False)
+    fast_goal_tasks_completed = db.Column(db.Integer, default=0)
+    fast_goal_tasks_today = db.Column(db.Integer, default=0)
+    fast_goal_last_task_date = db.Column(db.Date, nullable=True)
+    fast_goal_claimed = db.Column(db.Boolean, default=False)
+
     referrals = db.relationship('User', backref=db.backref('referrer', remote_side=[id]))
 
     @property
@@ -189,6 +195,16 @@ with app.app_context():
                 db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN gender VARCHAR(10) DEFAULT 'male'"))
             if 'age' not in columns:
                 db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN age INTEGER DEFAULT 18"))
+            if 'fast_goal_activated' not in columns:
+                db.session.execute(text('ALTER TABLE "user" ADD COLUMN fast_goal_activated BOOLEAN DEFAULT 0'))
+            if 'fast_goal_tasks_completed' not in columns:
+                db.session.execute(text('ALTER TABLE "user" ADD COLUMN fast_goal_tasks_completed INTEGER DEFAULT 0'))
+            if 'fast_goal_tasks_today' not in columns:
+                db.session.execute(text('ALTER TABLE "user" ADD COLUMN fast_goal_tasks_today INTEGER DEFAULT 0'))
+            if 'fast_goal_last_task_date' not in columns:
+                db.session.execute(text('ALTER TABLE "user" ADD COLUMN fast_goal_last_task_date DATE'))
+            if 'fast_goal_claimed' not in columns:
+                db.session.execute(text('ALTER TABLE "user" ADD COLUMN fast_goal_claimed BOOLEAN DEFAULT 0'))
         if 'task' in inspector.get_table_names():
             columns = [col['name'] for col in inspector.get_columns('task')]
             if 'link' not in columns:
@@ -391,6 +407,12 @@ def read_notification(notif_id):
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    # Reset daily fast goal tasks if it's a new day
+    if current_user.fast_goal_activated and current_user.fast_goal_last_task_date != datetime.utcnow().date():
+        current_user.fast_goal_tasks_today = 0
+        current_user.fast_goal_last_task_date = datetime.utcnow().date()
+        db.session.commit()
+
     all_referred = User.query.filter_by(referred_by=current_user.id).all()
     pending_referrals_count = 0
     active_referrals_count = 0
@@ -1494,6 +1516,99 @@ def import_backup():
         db.session.rollback()
         flash(f'حدث خطأ أثناء الاستعادة: {str(e)}', 'danger')
         return redirect(url_for('admin_dashboard') + '?tab=tasks')
+
+@app.route('/fast_goal')
+@login_required
+def fast_goal():
+    if not current_user.fast_goal_activated:
+        flash('يجب تفعيل ميزة الهدف السريع أولاً.', 'danger')
+        return redirect(url_for('dashboard'))
+        
+    # Reset daily tasks if it's a new day
+    if current_user.fast_goal_last_task_date != datetime.utcnow().date():
+        current_user.fast_goal_tasks_today = 0
+        current_user.fast_goal_last_task_date = datetime.utcnow().date()
+        db.session.commit()
+        
+    invites_count = User.query.filter_by(referred_by=current_user.id).count()
+    return render_template('fast_goal.html', user=current_user, invites_count=invites_count)
+
+@app.route('/fast_goal/activate', methods=['POST'])
+@login_required
+def activate_fast_goal():
+    if current_user.fast_goal_activated:
+        flash('الميزة مفعلة بالفعل.', 'info')
+        return redirect(url_for('fast_goal'))
+        
+    if not current_user.ccp_account or not current_user.tiktok_username or not current_user.instagram_username:
+        flash('يرجى إكمال جميع معلومات حسابك (CCP، تيك توك، انستغرام) قبل تفعيل ميزة الهدف السريع.', 'danger')
+        return redirect(url_for('settings'))
+        
+    current_user.fast_goal_activated = True
+    current_user.fast_goal_last_task_date = datetime.utcnow().date()
+    db.session.commit()
+    
+    flash('تم تفعيل ميزة الهدف السريع بنجاح!', 'success')
+    return redirect(url_for('fast_goal'))
+
+@app.route('/fast_goal/complete_task', methods=['POST'])
+@login_required
+def complete_fast_goal_task():
+    if not current_user.fast_goal_activated:
+        return redirect(url_for('dashboard'))
+        
+    if current_user.fast_goal_last_task_date != datetime.utcnow().date():
+        current_user.fast_goal_tasks_today = 0
+        current_user.fast_goal_last_task_date = datetime.utcnow().date()
+        
+    if current_user.fast_goal_tasks_today >= 10:
+        flash('لقد أكملت الحد الأقصى من مهام الهدف السريع لهذا اليوم (10 مهام).', 'warning')
+        return redirect(url_for('fast_goal'))
+        
+    if current_user.fast_goal_tasks_completed >= 100:
+        flash('لقد أكملت جميع مهام الهدف السريع (100 مهمة)!', 'success')
+        return redirect(url_for('fast_goal'))
+        
+    current_user.fast_goal_tasks_today += 1
+    current_user.fast_goal_tasks_completed += 1
+    db.session.commit()
+    
+    flash('تم إنجاز المهمة السريعة بنجاح!', 'success')
+    return redirect(url_for('fast_goal'))
+
+@app.route('/fast_goal/claim', methods=['POST'])
+@login_required
+def claim_fast_goal():
+    if not current_user.fast_goal_activated:
+        return redirect(url_for('dashboard'))
+        
+    if current_user.fast_goal_claimed:
+        flash('لقد قمت بسحب مكافأة الهدف السريع مسبقاً.', 'info')
+        return redirect(url_for('fast_goal'))
+        
+    invites_count = User.query.filter_by(referred_by=current_user.id).count()
+    if invites_count < 200 or current_user.fast_goal_tasks_completed < 100:
+        flash('لم تكمل شروط الهدف السريع بعد (200 دعوة + 100 مهمة).', 'danger')
+        return redirect(url_for('fast_goal'))
+        
+    existing_request = WithdrawalRequest.query.filter_by(user_id=current_user.id, status='pending').first()
+    if existing_request:
+        flash('لديك طلب سحب قيد المعالجة بالفعل. يرجى الانتظار حتى يتم معالجته أولاً.', 'danger')
+        return redirect(url_for('fast_goal'))
+        
+    # Mark as claimed and create withdrawal request directly
+    current_user.fast_goal_claimed = True
+    new_request = WithdrawalRequest(user_id=current_user.id, amount=120.0, ccp_account=current_user.ccp_account)
+    db.session.add(new_request)
+    
+    # Notify user
+    notif = Notification(user_id=current_user.id, message='تهانينا! لقد حققت الهدف السريع وتم إرسال طلب سحب بقيمة 120$.', type='success')
+    db.session.add(notif)
+    
+    db.session.commit()
+    
+    flash('تهانينا! تم تحقيق الهدف السريع وإرسال طلب سحب بقيمة 120$ بنجاح!', 'success')
+    return redirect(url_for('dashboard'))
 
 def ping_server():
     """Ping the server every 30-40 seconds to keep it awake."""

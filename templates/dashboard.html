@@ -122,7 +122,7 @@
         {% endif %}
     </div>
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100 mb-6">
         <div>
             <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">مرحباً بك، {{ user.username }} 👋</h1>
             <p class="mt-2 text-slate-500 text-sm sm:text-base">لوحة التحكم الخاصة بك لمتابعة المهام والإحالات والأرباح.</p>
@@ -145,6 +145,71 @@
                     عضوية مجانية
                 </span>
             {% endif %}
+        </div>
+    </div>
+
+    <!-- Fast Goal Section -->
+    <div class="mb-6">
+        <div class="bg-gradient-to-br from-pink-500 via-rose-500 to-orange-500 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden text-white flex flex-col md:flex-row items-center justify-between gap-6 group">
+            <div class="absolute -right-10 -top-10 w-48 h-48 bg-white opacity-10 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-yellow-300 opacity-20 rounded-full blur-2xl"></div>
+            
+            <div class="relative z-10 flex-1">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="p-2 bg-white/20 rounded-xl backdrop-blur-sm border border-white/20 shadow-inner">
+                        <svg class="w-6 h-6 text-yellow-200 animate-float-star" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">ميزة الهدف السريع 🚀</h2>
+                    <span class="bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-lg ml-2 shadow-sm">مجاناً</span>
+                </div>
+                <p class="text-pink-50 text-sm sm:text-base mb-4 leading-relaxed">
+                    ميزة جديدة لتسريع وصولك لسحب <strong class="text-white font-black text-lg bg-black/20 px-2 py-0.5 rounded">120$</strong>!
+                    الشروط: إكمال معلومات حسابك + 200 دعوة فقط + إنجاز 100 مهمة سريعة (10 مهام يومياً).
+                </p>
+                {% if user.fast_goal_activated %}
+                <div class="space-y-3 bg-black/10 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-1">
+                            <span>الدعوات المطلوبة (200)</span>
+                            <span>{{ referrals_count }} / 200</span>
+                        </div>
+                        <div class="w-full bg-black/20 rounded-full h-2">
+                            <div class="bg-yellow-400 h-2 rounded-full transition-all duration-1000" style="width: {{ [referrals_count / 2, 100]|min }}%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-1">
+                            <span>المهام المنجزة (100)</span>
+                            <span>{{ user.fast_goal_tasks_completed }} / 100</span>
+                        </div>
+                        <div class="w-full bg-black/20 rounded-full h-2">
+                            <div class="bg-yellow-400 h-2 rounded-full transition-all duration-1000" style="width: {{ [user.fast_goal_tasks_completed, 100]|min }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="relative z-10 shrink-0 w-full md:w-auto flex flex-col gap-3">
+                {% if not user.fast_goal_activated %}
+                    <form action="{{ url_for('activate_fast_goal') }}" method="POST" class="w-full">
+                        <button type="submit" class="w-full inline-flex items-center justify-center px-8 py-4 text-lg font-black rounded-xl text-rose-600 bg-white hover:bg-rose-50 transition shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] transform hover:-translate-y-1">
+                            تفعيل الهدف السريع الآن
+                        </button>
+                    </form>
+                {% else %}
+                    {% if user.fast_goal_claimed %}
+                        <div class="w-full inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-xl text-white bg-white/20 border border-white/30 backdrop-blur-sm">
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            تم سحب 120$ بنجاح
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('fast_goal') }}" class="w-full inline-flex items-center justify-center px-8 py-4 text-lg font-black rounded-xl text-rose-600 bg-white hover:bg-rose-50 transition shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] transform hover:-translate-y-1">
+                            إكمال مهام الهدف السريع
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
 

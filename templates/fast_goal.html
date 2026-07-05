@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6 sm:space-y-8 px-2 sm:px-0">
+    <!-- Header -->
+    <div class="bg-gradient-to-br from-rose-500 to-pink-600 rounded-3xl p-8 shadow-xl relative overflow-hidden text-white">
+        <div class="absolute -right-10 -top-10 w-48 h-48 bg-white opacity-10 rounded-full blur-3xl"></div>
+        <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-yellow-300 opacity-20 rounded-full blur-2xl"></div>
+        
+        <div class="relative z-10 flex flex-col items-center text-center">
+            <div class="p-4 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/20 shadow-inner mb-4">
+                <svg class="w-12 h-12 text-yellow-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black tracking-tight mb-2">الهدف السريع 🚀</h1>
+            <p class="text-pink-100 text-lg max-w-lg mx-auto">
+                أكمل الشروط أدناه لتحصل على مكافأة <strong class="text-yellow-300 text-xl">120$</strong> مباشرة لحسابك!
+            </p>
+        </div>
+    </div>
+
+    <!-- Progress Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Invites Progress -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900">الدعوات المطلوبة</h3>
+                        <p class="text-sm text-slate-500">ادعُ 200 شخص (لا يشترط إكمالهم للمهام)</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-baseline mb-2">
+                    <span class="text-3xl font-extrabold text-blue-600">{{ invites_count }}</span>
+                    <span class="text-slate-400 font-medium">/ 200</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden">
+                    <div class="bg-blue-500 h-3 rounded-full transition-all duration-1000 relative" style="width: {{ [invites_count / 2, 100]|min }}%">
+                        <div class="absolute inset-0 bg-white/20"></div>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 text-center">{{ [invites_count / 2, 100]|min }}% مكتمل</p>
+            </div>
+        </div>
+
+        <!-- Tasks Progress -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900">المهام السريعة</h3>
+                        <p class="text-sm text-slate-500">أنجز 100 مهمة (الحد الأقصى 10 يومياً)</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-baseline mb-2">
+                    <span class="text-3xl font-extrabold text-emerald-600">{{ user.fast_goal_tasks_completed }}</span>
+                    <span class="text-slate-400 font-medium">/ 100</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3 mb-2 overflow-hidden">
+                    <div class="bg-emerald-500 h-3 rounded-full transition-all duration-1000 relative" style="width: {{ [user.fast_goal_tasks_completed, 100]|min }}%">
+                        <div class="absolute inset-0 bg-white/20"></div>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 text-center">{{ [user.fast_goal_tasks_completed, 100]|min }}% مكتمل</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Claim Button (Shows when complete) -->
+    {% if invites_count >= 200 and user.fast_goal_tasks_completed >= 100 %}
+        {% if not user.fast_goal_claimed %}
+        <div class="bg-white rounded-3xl p-8 shadow-sm border-2 border-yellow-400 text-center relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-r from-yellow-50 via-white to-yellow-50 opacity-50"></div>
+            <div class="relative z-10">
+                <div class="w-20 h-20 mx-auto bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h2 class="text-2xl font-black text-slate-900 mb-2">لقد أكملت الهدف السريع! 🎉</h2>
+                <p class="text-slate-500 mb-6">مكافأتك (120$) جاهزة للسحب مباشرة إلى حسابك.</p>
+                <form action="{{ url_for('claim_fast_goal') }}" method="POST">
+                    <button type="submit" class="inline-flex items-center justify-center px-10 py-4 text-xl font-black rounded-xl text-yellow-900 bg-yellow-400 hover:bg-yellow-300 transition shadow-[0_0_20px_rgba(250,204,21,0.4)] hover:shadow-[0_0_30px_rgba(250,204,21,0.6)] transform hover:-translate-y-1">
+                        سحب 120$ الآن!
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="bg-emerald-50 rounded-3xl p-8 shadow-sm border border-emerald-100 text-center">
+            <div class="w-16 h-16 mx-auto bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-emerald-800 mb-2">تم استلام المكافأة! 🎉</h2>
+            <p class="text-emerald-600">لقد قمت بسحب مكافأة الهدف السريع بنجاح. نتمنى لك التوفيق في المهام القادمة.</p>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Daily Tasks Section -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100">
+        <div class="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+            <div>
+                <h2 class="text-xl font-bold text-slate-900">مهام اليوم</h2>
+                <p class="text-slate-500 text-sm mt-1">يمكنك إنجاز 10 مهام يومياً</p>
+            </div>
+            <div class="text-center bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
+                <span class="block text-xs font-bold text-slate-500 mb-1">المنجز اليوم</span>
+                <span class="text-2xl font-black text-rose-500">{{ user.fast_goal_tasks_today }}<span class="text-base text-slate-400 font-medium">/10</span></span>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            {% for i in range(1, 11) %}
+                <div class="flex items-center justify-between p-4 rounded-2xl border {% if i <= user.fast_goal_tasks_today %}bg-slate-50 border-slate-200{% else %}bg-white border-slate-200 hover:border-rose-200 transition-colors{% endif %}">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm {% if i <= user.fast_goal_tasks_today %}bg-slate-200 text-slate-500{% else %}bg-rose-100 text-rose-600{% endif %}">
+                            {{ i }}
+                        </div>
+                        <div>
+                            <h4 class="font-bold {% if i <= user.fast_goal_tasks_today %}text-slate-500 line-through{% else %}text-slate-900{% endif %}">مهمة سريعة {{ i }}</h4>
+                            <p class="text-xs text-slate-500">إنجاز للتقدم نحو الهدف</p>
+                        </div>
+                    </div>
+                    
+                    {% if i <= user.fast_goal_tasks_today %}
+                        <span class="inline-flex items-center text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            مكتملة
+                        </span>
+                    {% elif i == user.fast_goal_tasks_today + 1 %}
+                        <form action="{{ url_for('complete_fast_goal_task') }}" method="POST">
+                            <button type="submit" class="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl transition-colors shadow-sm">
+                                إنجاز الآن
+                            </button>
+                        </form>
+                    {% else %}
+                        <button disabled class="px-5 py-2.5 bg-slate-100 text-slate-400 text-sm font-bold rounded-xl cursor-not-allowed">
+                            مقفلة
+                        </button>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

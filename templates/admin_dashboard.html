@@ -29,6 +29,17 @@
                     <h3 class="text-2xl font-black text-slate-900">{{ total_users }}</h3>
                 </div>
             </div>
+
+            <!-- Fast Goal Stats -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-slate-500 mb-1">مفعلي الهدف السريع</p>
+                    <h3 class="text-2xl font-black text-slate-900">{{ users|selectattr('fast_goal_activated', 'equalto', True)|list|length }}</h3>
+                </div>
+            </div>
             
             <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex items-center gap-4">
                 <div class="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
