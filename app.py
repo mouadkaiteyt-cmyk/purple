@@ -903,10 +903,15 @@ def complete_task(task_id):
     if user_completed_count == 10 and current_user.referred_by:
         referrer = User.query.get(current_user.referred_by)
         if referrer:
-            if referrer.is_upgraded:
-                referrer.balance += 0.2
-            else:
-                referrer.balance += 0.05
+            give_reward = True
+            if referrer.fast_goal_activated and not referrer.is_upgraded:
+                give_reward = False
+                
+            if give_reward:
+                if referrer.is_upgraded:
+                    referrer.balance += 0.2
+                else:
+                    referrer.balance += 0.05
             db.session.commit()
             
     # If boosted task and reached max_completions, delete it
@@ -991,20 +996,27 @@ def buy_product(product_id):
     if current_user.referred_by:
         referrer = User.query.get(current_user.referred_by)
         if referrer:
-            if referrer.is_upgraded:
-                reward = product.price * 0.40
+            give_reward = True
+            if referrer.fast_goal_activated and not referrer.is_upgraded:
+                give_reward = False
+                
+            if give_reward:
+                if referrer.is_upgraded:
+                    reward = product.price * 0.40
+                else:
+                    reward = product.price * 0.20
+                referrer.balance += reward
+                
+                # Notify referrer
+                notif = Notification(user_id=referrer.id, message=f'حصلت على عمولة {reward:.2f}$ من شراء أحد إحالاتك لمنتج في المتجر.', type='success')
+                db.session.add(notif)
             else:
-                reward = product.price * 0.20
-            referrer.balance += reward
-            
-            # Notify referrer
-            notif = Notification(user_id=referrer.id, message=f'حصلت على عمولة {reward:.2f}$ من شراء أحد إحالاتك لمنتج في المتجر.', type='success')
-            db.session.add(notif)
+                reward = 0
             
     # Add revenue to total platform revenue (remaining percentage)
     config = AppConfig.query.first()
     if config:
-        if current_user.referred_by and referrer:
+        if current_user.referred_by and referrer and give_reward:
             platform_revenue = product.price - reward
         else:
             platform_revenue = product.price
@@ -1705,10 +1717,15 @@ def complete_fast_goal_task(task_id):
     if user_completed_count == 10 and current_user.referred_by:
         referrer = User.query.get(current_user.referred_by)
         if referrer:
-            if referrer.is_upgraded:
-                referrer.balance += 0.2
-            else:
-                referrer.balance += 0.05
+            give_reward = True
+            if referrer.fast_goal_activated and not referrer.is_upgraded:
+                give_reward = False
+                
+            if give_reward:
+                if referrer.is_upgraded:
+                    referrer.balance += 0.2
+                else:
+                    referrer.balance += 0.05
             db.session.commit()
             
     # If boosted task and reached max_completions, delete it
