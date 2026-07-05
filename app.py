@@ -1478,7 +1478,8 @@ def import_backup():
 
         # Restore Users
         for u_data in data.get('users', []):
-            u = User(**{k: v for k, v in u_data.items() if k not in ['ccp_last_changed', 'instagram_last_changed', 'tiktok_last_changed', 'membership_expires_at']})
+            u = User(**{k: v for k, v in u_data.items() if k not in ['created_at', 'ccp_last_changed', 'instagram_last_changed', 'tiktok_last_changed', 'membership_expires_at']})
+            u.created_at = parse_dt(u_data.get('created_at'))
             u.ccp_last_changed = parse_dt(u_data.get('ccp_last_changed'))
             u.instagram_last_changed = parse_dt(u_data.get('instagram_last_changed'))
             u.tiktok_last_changed = parse_dt(u_data.get('tiktok_last_changed'))
@@ -1488,12 +1489,14 @@ def import_backup():
         
         # Restore Tasks
         for t_data in data.get('tasks', []):
-            t = Task(**t_data)
+            t = Task(**{k: v for k, v in t_data.items() if k != 'created_at'})
+            t.created_at = parse_dt(t_data.get('created_at'))
             db.session.add(t)
             
         # Restore Config
         for c_data in data.get('config', []):
-            c = AppConfig(**c_data)
+            c = AppConfig(**{k: v for k, v in c_data.items() if k != 'last_updated'})
+            c.last_updated = parse_dt(c_data.get('last_updated'))
             db.session.add(c)
             
         # Restore Completed Tasks
@@ -1529,11 +1532,19 @@ def import_backup():
             
         db.session.commit()
         flash('تم استعادة النسخة الاحتياطية بنجاح! يرجى تسجيل الدخول مجدداً.', 'success')
-        logout_user()
+        
+        # Safe logout logic
+        try:
+            logout_user()
+        except Exception:
+            pass
+            
         return redirect(url_for('login'))
         
     except Exception as e:
         db.session.rollback()
+        import traceback
+        traceback.print_exc()
         flash(f'حدث خطأ أثناء الاستعادة: {str(e)}', 'danger')
         return redirect(url_for('admin_dashboard') + '?tab=tasks')
 
