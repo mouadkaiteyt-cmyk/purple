@@ -417,7 +417,7 @@ def dashboard():
     if current_user.fast_goal_activated:
         fg_referrals = User.query.filter_by(referred_by=current_user.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 20).all()
         for r in fg_referrals:
-            r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).count()
+            r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 10).count()
             if r_invites >= 200:
                 fast_goal_valid_referrals += 1
 
@@ -1542,7 +1542,7 @@ def fast_goal():
     valid_referrals_count = 0
     fg_referrals = User.query.filter_by(referred_by=current_user.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 20).all()
     for r in fg_referrals:
-        r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).count()
+        r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 10).count()
         if r_invites >= 200:
             valid_referrals_count += 1
             
@@ -1604,7 +1604,7 @@ def claim_fast_goal():
     valid_referrals_count = 0
     fg_referrals = User.query.filter_by(referred_by=current_user.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 20).all()
     for r in fg_referrals:
-        r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).count()
+        r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 10).count()
         if r_invites >= 200:
             valid_referrals_count += 1
             
