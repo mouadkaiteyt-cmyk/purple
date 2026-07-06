@@ -63,6 +63,20 @@
             </div>
         </div>
 
+        <!-- Goal Specific Info -->
+        {% if user.goal_choice == 'followers' %}
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                <svg class="w-5 h-5 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                الصفحة المستهدفة (زيادة المتابعين)
+            </h3>
+            <p class="text-sm text-slate-500 mb-4">أدخل رابط الصفحة أو اسم الحساب الذي تريد زيادة المتابعين فيه عند وصولك للهدف.</p>
+            <div>
+                <label for="target_followers_page" class="block text-sm font-medium text-slate-700 mb-1">رابط أو اسم الحساب</label>
+                <input type="text" name="target_followers_page" id="target_followers_page" value="{{ user.target_followers_page or '' }}" class="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 sm:text-sm" placeholder="أدخل الرابط أو اسم الحساب">
+            </div>
+        </div>
+        {% else %}
         <!-- Payment Info -->
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
             <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
@@ -77,15 +91,54 @@
             </div>
             {% endif %}
 
-            <div class="space-y-4">
+            <div class="space-y-6">
                 <div>
-                    <label for="payment_method" class="block text-sm font-medium text-slate-700 mb-1">طريقة الدفع</label>
-                    <select id="payment_method" name="payment_method" class="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
-                        <option value="ccp" {% if user.payment_method == 'ccp' %}selected{% endif %}>بريد الجزائر (CCP)</option>
-                        <option value="binance" {% if user.payment_method == 'binance' %}selected{% endif %}>Binance Pay</option>
-                        <option value="paypal" {% if user.payment_method == 'paypal' %}selected{% endif %}>PayPal</option>
-                        <option value="orange_cash" {% if user.payment_method == 'orange_cash' %}selected{% endif %}>Orange Cash</option>
-                    </select>
+                    <label class="block text-sm font-medium text-slate-700 mb-3">اختر طريقة الدفع</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <!-- CCP -->
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="payment_method" value="ccp" class="peer sr-only" {% if user.payment_method == 'ccp' or not user.payment_method %}checked{% endif %}>
+                            <div class="p-4 rounded-xl border-2 border-slate-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 hover:bg-slate-50 transition flex flex-col items-center text-center">
+                                <div class="w-10 h-10 mb-2 rounded-full bg-yellow-400 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                                    C
+                                </div>
+                                <span class="text-sm font-bold text-slate-700">بريد الجزائر</span>
+                            </div>
+                        </label>
+
+                        <!-- Binance -->
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="payment_method" value="binance" class="peer sr-only" {% if user.payment_method == 'binance' %}checked{% endif %}>
+                            <div class="p-4 rounded-xl border-2 border-slate-200 peer-checked:border-yellow-500 peer-checked:bg-yellow-50 hover:bg-slate-50 transition flex flex-col items-center text-center">
+                                <div class="w-10 h-10 mb-2 rounded-full bg-slate-900 flex items-center justify-center text-yellow-400 font-bold text-lg shadow-sm">
+                                    B
+                                </div>
+                                <span class="text-sm font-bold text-slate-700">Binance Pay</span>
+                            </div>
+                        </label>
+
+                        <!-- PayPal -->
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="payment_method" value="paypal" class="peer sr-only" {% if user.payment_method == 'paypal' %}checked{% endif %}>
+                            <div class="p-4 rounded-xl border-2 border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:bg-slate-50 transition flex flex-col items-center text-center">
+                                <div class="w-10 h-10 mb-2 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                                    P
+                                </div>
+                                <span class="text-sm font-bold text-slate-700">PayPal</span>
+                            </div>
+                        </label>
+
+                        <!-- Orange Cash -->
+                        <label class="relative cursor-pointer">
+                            <input type="radio" name="payment_method" value="orange_cash" class="peer sr-only" {% if user.payment_method == 'orange_cash' %}checked{% endif %}>
+                            <div class="p-4 rounded-xl border-2 border-slate-200 peer-checked:border-orange-500 peer-checked:bg-orange-50 hover:bg-slate-50 transition flex flex-col items-center text-center">
+                                <div class="w-10 h-10 mb-2 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                                    O
+                                </div>
+                                <span class="text-sm font-bold text-slate-700">Orange Cash</span>
+                            </div>
+                        </label>
+                    </div>
                 </div>
                 
                 <div>
@@ -94,6 +147,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
 
         <div>
             <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition">

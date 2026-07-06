@@ -104,7 +104,11 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                                     {{ u.instagram_username or '-' }}<br>
+                                    {% if u.goal_choice == 'followers' %}
+                                    <span class="text-xs text-slate-400">الصفحة: {{ u.target_followers_page or '-' }}</span>
+                                    {% else %}
                                     <span class="text-xs text-slate-400">{{ u.payment_method|upper }}: {{ u.ccp_account or '-' }}</span>
+                                    {% endif %}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button onclick="showResetPasswordModal({{ u.id }}, '{{ u.username }}')" class="text-blue-600 hover:text-blue-900 ml-3">تغيير السر</button>

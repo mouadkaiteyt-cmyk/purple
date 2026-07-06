@@ -39,6 +39,7 @@ class User(UserMixin, db.Model):
     age = db.Column(db.Integer, default=18)
     
     goal_choice = db.Column(db.String(20), default='money') # 'money' or 'followers'
+    target_followers_page = db.Column(db.String(200), nullable=True) # Page link/username for followers goal
     fast_goal_tasks_completed = db.Column(db.Integer, default=0)
     fast_goal_tasks_today = db.Column(db.Integer, default=0)
     fast_goal_last_task_date = db.Column(db.Date, nullable=True)
@@ -121,6 +122,9 @@ with app.app_context():
             columns = [col['name'] for col in inspector.get_columns('user')]
             if 'goal_choice' not in columns:
                 db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN goal_choice VARCHAR(20) DEFAULT 'money'"))
+                db.session.commit()
+            if 'target_followers_page' not in columns:
+                db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN target_followers_page VARCHAR(200)"))
                 db.session.commit()
     except Exception as e:
         print(f"Migration error: {e}")
@@ -421,9 +425,14 @@ def claim_goal():
         flash('لم تكمل شروط الهدف بعد.', 'danger')
         return redirect(url_for('dashboard'))
         
-    if not current_user.instagram_username or not current_user.ccp_account:
-        flash('يرجى إضافة حساب انستغرام وبيانات الدفع في الإعدادات قبل السحب.', 'danger')
-        return redirect(url_for('settings'))
+    if current_user.goal_choice == 'money':
+        if not current_user.instagram_username or not current_user.ccp_account:
+            flash('يرجى إضافة حساب انستغرام وبيانات الدفع في الإعدادات قبل السحب.', 'danger')
+            return redirect(url_for('settings'))
+    else:
+        if not current_user.instagram_username or not current_user.target_followers_page:
+            flash('يرجى إضافة حساب انستغرام والصفحة المستهدفة في الإعدادات قبل السحب.', 'danger')
+            return redirect(url_for('settings'))
         
     existing_request = WithdrawalRequest.query.filter_by(user_id=current_user.id, status='pending').first()
     if existing_request:
@@ -433,12 +442,13 @@ def claim_goal():
     current_user.fast_goal_claimed = True
     
     amount = 80.0 if current_user.goal_choice == 'money' else 0.0
-    payment_method = current_user.payment_method
+    payment_method = current_user.payment_method if current_user.goal_choice == 'money' else 'followers'
+    account_info = current_user.ccp_account if current_user.goal_choice == 'money' else current_user.target_followers_page
     
     new_request = WithdrawalRequest(
         user_id=current_user.id, 
         amount=amount, 
-        ccp_account=current_user.ccp_account,
+        ccp_account=account_info,
         payment_method=payment_method
     )
     db.session.add(new_request)
@@ -459,8 +469,12 @@ def settings():
         ccp_account = request.form.get('ccp_account')
         payment_method = request.form.get('payment_method')
         instagram = request.form.get('instagram_username')
+        target_followers_page = request.form.get('target_followers_page')
 
         now = datetime.utcnow()
+        
+        if current_user.goal_choice == 'followers' and target_followers_page is not None:
+            current_user.target_followers_page = target_followers_page
         
         if payment_method and payment_method != current_user.payment_method:
             current_user.payment_method = payment_method
