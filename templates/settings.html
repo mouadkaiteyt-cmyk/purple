@@ -79,23 +79,52 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="target_followers_gender" class="block text-sm font-medium text-slate-700 mb-1">الجنس المستهدف</label>
-                        <select id="target_followers_gender" name="target_followers_gender" class="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
-                            <option value="all" {% if user.target_followers_gender == 'all' %}selected{% endif %}>مختلط (الكل)</option>
-                            <option value="male" {% if user.target_followers_gender == 'male' %}selected{% endif %}>ذكور فقط</option>
-                            <option value="female" {% if user.target_followers_gender == 'female' %}selected{% endif %}>إناث فقط</option>
-                        </select>
+                        <label class="block text-sm font-bold text-slate-700 mb-3">الجنس المستهدف</label>
+                        <div class="flex flex-wrap gap-4">
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="target_followers_gender" value="all" class="peer sr-only" {% if user.target_followers_gender == 'all' or not user.target_followers_gender %}checked{% endif %}>
+                                <div class="px-6 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 peer-checked:border-purple-500 peer-checked:text-purple-600 peer-checked:bg-purple-50 font-medium transition-all">الكل</div>
+                            </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="target_followers_gender" value="male" class="peer sr-only" {% if user.target_followers_gender == 'male' %}checked{% endif %}>
+                                <div class="px-6 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 peer-checked:border-purple-500 peer-checked:text-purple-600 peer-checked:bg-purple-50 font-medium transition-all">ذكور فقط</div>
+                            </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="target_followers_gender" value="female" class="peer sr-only" {% if user.target_followers_gender == 'female' %}checked{% endif %}>
+                                <div class="px-6 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 peer-checked:border-purple-500 peer-checked:text-purple-600 peer-checked:bg-purple-50 font-medium transition-all">إناث فقط</div>
+                            </label>
+                        </div>
                     </div>
-                    <div>
-                        <label for="target_followers_age" class="block text-sm font-medium text-slate-700 mb-1">الفئة العمرية</label>
-                        <select id="target_followers_age" name="target_followers_age" class="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
-                            <option value="all" {% if user.target_followers_age == 'all' %}selected{% endif %}>جميع الأعمار</option>
-                            <option value="13-17" {% if user.target_followers_age == '13-17' %}selected{% endif %}>13 - 17 سنة</option>
-                            <option value="18-24" {% if user.target_followers_age == '18-24' %}selected{% endif %}>18 - 24 سنة</option>
-                            <option value="25-34" {% if user.target_followers_age == '25-34' %}selected{% endif %}>25 - 34 سنة</option>
-                            <option value="35+" {% if user.target_followers_age == '35+' %}selected{% endif %}>35 سنة فما فوق</option>
-                        </select>
+                    
+                    {% set age_parts = user.target_followers_age.split('-') if user.target_followers_age and '-' in user.target_followers_age else ['', ''] %}
+                    {% set min_age = age_parts[0] %}
+                    {% set max_age = age_parts[1] %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">العمر من</label>
+                            <input type="number" id="min_age_input" min="13" max="100" value="{{ min_age }}" placeholder="مثال: 18" class="w-full bg-white border border-slate-300 text-slate-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block p-3 transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">العمر إلى</label>
+                            <input type="number" id="max_age_input" min="13" max="100" value="{{ max_age }}" placeholder="مثال: 45" class="w-full bg-white border border-slate-300 text-slate-900 text-sm rounded-xl focus:ring-purple-500 focus:border-purple-500 block p-3 transition-colors">
+                        </div>
                     </div>
+                    <input type="hidden" name="target_followers_age" id="target_followers_age" value="{{ user.target_followers_age or 'all' }}">
+
+                    <script>
+                        const minInput = document.getElementById('min_age_input');
+                        const maxInput = document.getElementById('max_age_input');
+                        const ageHidden = document.getElementById('target_followers_age');
+                        function updateAge() {
+                            if (minInput.value && maxInput.value) {
+                                ageHidden.value = minInput.value + '-' + maxInput.value;
+                            } else {
+                                ageHidden.value = 'all';
+                            }
+                        }
+                        minInput.addEventListener('input', updateAge);
+                        maxInput.addEventListener('input', updateAge);
+                    </script>
                 </div>
             </div>
         </div>
