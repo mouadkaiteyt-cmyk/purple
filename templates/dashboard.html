@@ -1,32 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="space-y-6 pb-20">
+<div class="space-y-4 pb-12">
     <!-- Header -->
-    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-5 shadow-md relative overflow-hidden text-white">
+        <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full blur-xl"></div>
+        <div class="absolute bottom-0 left-0 -mb-4 -ml-4 w-20 h-20 bg-white opacity-10 rounded-full blur-lg"></div>
         <div class="flex items-center justify-between relative z-10">
             <div>
-                <h2 class="text-2xl font-black text-slate-900 mb-1">مرحباً، {{ user.username }}! 👋</h2>
-                <p class="text-slate-500 text-sm">استمر في إنجاز المهام للوصول إلى هدفك.</p>
+                <h2 class="text-2xl font-bold mb-1">مرحباً بك، {{ user.username }} 👋</h2>
+                <p class="text-purple-100 text-sm">واصل إنجاز مهامك لتحقيق هدفك بسرعة!</p>
             </div>
-            <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-xl shadow-inner border border-purple-200">
+            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-xl shadow-sm backdrop-blur-sm border border-white/30">
                 {{ user.username[0]|upper }}
             </div>
         </div>
     </div>
 
     <!-- Goal Progress -->
-    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-        <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+        <h3 class="text-lg font-bold text-slate-900 mb-3 flex items-center">
             <svg class="w-5 h-5 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
             </svg>
             الهدف السريع
         </h3>
         
-        <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-5 border border-purple-100 mb-6">
-            <div class="flex justify-between items-center mb-4">
+        <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-100 mb-4">
+            <div class="flex justify-between items-center mb-3">
                 <div class="text-purple-900 font-bold text-lg">
                     {% if user.goal_choice == 'money' %}
                     80 دولار
@@ -40,20 +41,20 @@
             </div>
 
             <!-- Progress Bar -->
-            <div class="mb-2 flex justify-between text-sm">
+            <div class="mb-1 flex justify-between text-sm">
                 <span class="font-medium text-purple-800">نسبة الإنجاز</span>
                 <span class="font-bold text-purple-900">{{ "%.1f"|format(total_progress) }}%</span>
             </div>
-            <div class="w-full bg-purple-200 rounded-full h-3 mb-6 overflow-hidden">
+            <div class="w-full bg-purple-200 rounded-full h-2 mb-4 overflow-hidden">
                 <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-3 rounded-full transition-all duration-1000 relative" style="width: {{ total_progress }}%">
                     <div class="absolute top-0 right-0 bottom-0 left-0 bg-white opacity-20" style="background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent); background-size: 1rem 1rem;"></div>
                 </div>
             </div>
 
             {% if total_progress >= 50 and total_progress < 100 %}
-            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-xl text-sm mb-6 flex items-start">
-                <svg class="w-5 h-5 ml-2 flex-shrink-0 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p>لقد أكملت 50% من الهدف بنجاح! بمعدل {{ tasks_completed }} مهمة و {{ invites_completed }} دعوة.</p>
+            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 rounded-lg text-sm mb-4 flex items-start">
+                <svg class="w-4 h-4 ml-1.5 flex-shrink-0 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <p>أكملت 50% من الهدف! ({{ tasks_completed }} مهمة و {{ invites_completed }} دعوة).</p>
             </div>
             {% endif %}
 
@@ -105,14 +106,14 @@
     </div>
 
     <!-- Referral Link -->
-    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-        <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+        <h3 class="text-lg font-bold text-slate-900 mb-3 flex items-center">
             <svg class="w-5 h-5 text-indigo-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
             رابط الدعوة الخاص بك
         </h3>
-        <p class="text-sm text-slate-600 mb-4">انسخ الرابط وشاركه مع أصدقائك للحصول على دعوات نشطة (يجب أن يكمل صديقك 50% من المهام + 50 دعوة لتُحتسب دعوة نشطة).</p>
+        <p class="text-sm text-slate-600 mb-3">شارك الرابط للحصول على دعوات نشطة (تُحتسب عند إنجاز صديقك 50% مهام و50 دعوة).</p>
         
         <div class="flex items-center space-x-2 space-x-reverse bg-slate-50 p-2 rounded-xl border border-slate-200">
             <input type="text" readonly value="{{ request.host_url }}register?ref={{ user.referral_code }}" id="refLink" class="bg-transparent border-none flex-1 text-sm text-slate-600 focus:ring-0 outline-none px-2 font-mono">
@@ -123,8 +124,8 @@
     </div>
 
     <!-- Tasks -->
-    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-        <div class="flex justify-between items-center mb-6">
+    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+        <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-slate-900 flex items-center">
                 <svg class="w-5 h-5 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
@@ -134,7 +135,7 @@
             <span class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full">المتبقي: {{ remaining_slots }}</span>
         </div>
 
-        <div class="space-y-4">
+        <div class="space-y-3">
             {% for task in tasks %}
             {% set is_completed = task.id in completed_task_ids %}
             <div class="border {{ 'border-green-200 bg-green-50' if is_completed else 'border-slate-200 bg-white' }} rounded-2xl p-4 transition shadow-sm">
