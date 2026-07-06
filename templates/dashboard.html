@@ -19,8 +19,8 @@
 
     <!-- Goal Progress -->
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-        <h3 class="text-lg font-bold text-slate-900 mb-3 flex items-center">
-            <svg class="w-5 h-5 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <h3 class="text-lg font-bold text-slate-900 mb-3 flex items-center whitespace-nowrap">
+            <svg class="w-5 h-5 text-purple-600 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
             </svg>
             الهدف السريع
@@ -107,8 +107,8 @@
 
     <!-- Referral Link -->
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-        <h3 class="text-lg font-bold text-slate-900 mb-3 flex items-center">
-            <svg class="w-5 h-5 text-indigo-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <h3 class="text-lg font-bold text-slate-900 mb-3 flex items-center whitespace-nowrap">
+            <svg class="w-5 h-5 text-indigo-600 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
             رابط الدعوة الخاص بك
@@ -126,14 +126,18 @@
     <!-- Tasks -->
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-slate-900 flex items-center">
-                <svg class="w-5 h-5 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <h3 class="text-lg font-bold text-slate-900 flex items-center whitespace-nowrap">
+                <svg class="w-5 h-5 text-purple-600 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                 </svg>
                 مهام اليوم
             </h3>
-            <span class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full">المتبقي: {{ remaining_slots }}</span>
+            <span class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">المتبقي: {{ remaining_slots }}</span>
         </div>
+        <p class="text-xs text-slate-500 mb-4 flex items-center">
+            <svg class="w-4 h-4 ml-1 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            تتجدد المهام كل 24 ساعة
+        </p>
 
         <div class="space-y-3">
             {% for task in tasks %}
