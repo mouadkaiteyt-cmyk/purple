@@ -344,6 +344,7 @@ def dashboard():
         today_completed_tasks = []
 
     all_tasks_to_show = tasks_to_show + today_completed_tasks
+    all_tasks_to_show.sort(key=lambda x: x.id, reverse=True)
     
     has_pending_withdrawal = WithdrawalRequest.query.filter_by(user_id=current_user.id, status='pending').first() is not None
     
