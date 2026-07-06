@@ -68,12 +68,35 @@
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
             <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
                 <svg class="w-5 h-5 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                الصفحة المستهدفة (زيادة المتابعين)
+                تخصيص المتابعين (الجائزة)
             </h3>
-            <p class="text-sm text-slate-500 mb-4">أدخل رابط الصفحة أو اسم الحساب الذي تريد زيادة المتابعين فيه عند وصولك للهدف.</p>
-            <div>
-                <label for="target_followers_page" class="block text-sm font-medium text-slate-700 mb-1">رابط أو اسم الحساب</label>
-                <input type="text" name="target_followers_page" id="target_followers_page" value="{{ user.target_followers_page or '' }}" class="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 sm:text-sm" placeholder="أدخل الرابط أو اسم الحساب">
+            <p class="text-sm text-slate-500 mb-4">أدخل تفاصيل الصفحة التي تريد زيادة المتابعين فيها وحدد الفئة المستهدفة.</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="target_followers_page" class="block text-sm font-medium text-slate-700 mb-1">رابط أو اسم الحساب</label>
+                    <input type="text" name="target_followers_page" id="target_followers_page" value="{{ user.target_followers_page or '' }}" class="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 sm:text-sm" placeholder="أدخل الرابط أو اسم الحساب">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="target_followers_gender" class="block text-sm font-medium text-slate-700 mb-1">الجنس المستهدف</label>
+                        <select id="target_followers_gender" name="target_followers_gender" class="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                            <option value="all" {% if user.target_followers_gender == 'all' %}selected{% endif %}>مختلط (الكل)</option>
+                            <option value="male" {% if user.target_followers_gender == 'male' %}selected{% endif %}>ذكور فقط</option>
+                            <option value="female" {% if user.target_followers_gender == 'female' %}selected{% endif %}>إناث فقط</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="target_followers_age" class="block text-sm font-medium text-slate-700 mb-1">الفئة العمرية</label>
+                        <select id="target_followers_age" name="target_followers_age" class="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                            <option value="all" {% if user.target_followers_age == 'all' %}selected{% endif %}>جميع الأعمار</option>
+                            <option value="13-17" {% if user.target_followers_age == '13-17' %}selected{% endif %}>13 - 17 سنة</option>
+                            <option value="18-24" {% if user.target_followers_age == '18-24' %}selected{% endif %}>18 - 24 سنة</option>
+                            <option value="25-34" {% if user.target_followers_age == '25-34' %}selected{% endif %}>25 - 34 سنة</option>
+                            <option value="35+" {% if user.target_followers_age == '35+' %}selected{% endif %}>35 سنة فما فوق</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
         {% else %}

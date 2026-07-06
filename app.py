@@ -40,6 +40,8 @@ class User(UserMixin, db.Model):
     
     goal_choice = db.Column(db.String(20), default='money') # 'money' or 'followers'
     target_followers_page = db.Column(db.String(200), nullable=True) # Page link/username for followers goal
+    target_followers_gender = db.Column(db.String(20), default='all')
+    target_followers_age = db.Column(db.String(20), default='all')
     fast_goal_tasks_completed = db.Column(db.Integer, default=0)
     fast_goal_tasks_today = db.Column(db.Integer, default=0)
     fast_goal_last_task_date = db.Column(db.Date, nullable=True)
@@ -125,6 +127,12 @@ with app.app_context():
                 db.session.commit()
             if 'target_followers_page' not in columns:
                 db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN target_followers_page VARCHAR(200)"))
+                db.session.commit()
+            if 'target_followers_gender' not in columns:
+                db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN target_followers_gender VARCHAR(20) DEFAULT 'all'"))
+                db.session.commit()
+            if 'target_followers_age' not in columns:
+                db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN target_followers_age VARCHAR(20) DEFAULT 'all'"))
                 db.session.commit()
     except Exception as e:
         print(f"Migration error: {e}")
@@ -337,10 +345,23 @@ def dashboard():
 
     all_tasks_to_show = tasks_to_show + today_completed_tasks
     
+    has_pending_withdrawal = WithdrawalRequest.query.filter_by(user_id=current_user.id, status='pending').first() is not None
+    
+    has_missing_info = False
+    if current_user.goal_choice == 'money':
+        if not current_user.instagram_username or not current_user.ccp_account:
+            has_missing_info = True
+    else:
+        if not current_user.instagram_username or not current_user.target_followers_page:
+            has_missing_info = True
+            
+    inactive_invites = referrals_count - valid_referrals_count
+    
     return render_template('dashboard.html', 
                            user=current_user, 
                            referrals_count=referrals_count,
                            valid_referrals_count=valid_referrals_count,
+                           inactive_invites=inactive_invites,
                            tasks=all_tasks_to_show,
                            config=config,
                            notifications=notifications,
@@ -350,6 +371,8 @@ def dashboard():
                            invites_completed=invites_completed,
                            total_progress=total_progress,
                            remaining_slots=remaining_slots,
+                           has_pending_withdrawal=has_pending_withdrawal,
+                           has_missing_info=has_missing_info,
                            completed_task_ids=today_completed_task_ids)
 
 @app.route('/tasks/complete/<int:task_id>', methods=['POST'])
@@ -470,11 +493,18 @@ def settings():
         payment_method = request.form.get('payment_method')
         instagram = request.form.get('instagram_username')
         target_followers_page = request.form.get('target_followers_page')
+        target_followers_gender = request.form.get('target_followers_gender')
+        target_followers_age = request.form.get('target_followers_age')
 
         now = datetime.utcnow()
         
-        if current_user.goal_choice == 'followers' and target_followers_page is not None:
-            current_user.target_followers_page = target_followers_page
+        if current_user.goal_choice == 'followers':
+            if target_followers_page is not None:
+                current_user.target_followers_page = target_followers_page
+            if target_followers_gender is not None:
+                current_user.target_followers_gender = target_followers_gender
+            if target_followers_age is not None:
+                current_user.target_followers_age = target_followers_age
         
         if payment_method and payment_method != current_user.payment_method:
             current_user.payment_method = payment_method

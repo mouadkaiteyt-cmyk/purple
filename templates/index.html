@@ -141,7 +141,7 @@
                         <span class="text-4xl font-extrabold text-slate-900">80$</span>
                         <span class="text-slate-500">/ كاش</span>
                     </div>
-                    <ul class="space-y-4 mb-8 flex-1">
+                    <ul class="space-y-4 mb-8 flex-1 text-right" dir="rtl">
                         <li class="flex items-center text-slate-600">
                             <svg class="w-5 h-5 text-emerald-500 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                             إنجاز <strong class="px-1 text-slate-900">100%</strong> من المهام المطلوبة
@@ -150,13 +150,13 @@
                             <svg class="w-5 h-5 text-emerald-500 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                             جلب <strong class="px-1 text-slate-900">100 دعوة نشطة</strong>
                         </li>
-                        <li class="flex items-center text-slate-600">
+                        <li class="flex items-center text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">
                             <svg class="w-5 h-5 text-emerald-500 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                             سحب مباشر نحو بريد الجزائر (CCP)
                         </li>
-                        <li class="flex items-center text-slate-600">
+                        <li class="flex items-center text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">
                             <svg class="w-5 h-5 text-emerald-500 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            أو سحب نحو Binance Pay / PayPal / Orange
+                            سحب عبر Binance Pay / PayPal / Orange
                         </li>
                     </ul>
                     <a href="{{ url_for('register') }}" class="w-full block text-center py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold hover:from-emerald-600 hover:to-teal-600 transition shadow-lg transform hover:scale-105">
@@ -177,24 +177,20 @@
                         <span class="text-4xl font-extrabold text-purple-900">10,000</span>
                         <span class="text-purple-600">/ متابع</span>
                     </div>
-                    <ul class="space-y-4 mb-8 flex-1">
-                        <li class="flex items-center text-slate-700">
+                    <ul class="space-y-4 mb-8 flex-1 text-right" dir="rtl">
+                        <li class="flex items-center text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis">
                             <svg class="w-5 h-5 text-purple-600 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            إنجاز <strong class="px-1 text-purple-900">100%</strong> من المهام المطلوبة
+                            إنجاز <strong class="px-1 text-purple-900">100%</strong> مهام و <strong class="px-1 text-purple-900">200</strong> دعوة نشطة
                         </li>
-                        <li class="flex items-center text-slate-700">
-                            <svg class="w-5 h-5 text-purple-600 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            جلب <strong class="px-1 text-purple-900">200 دعوة نشطة</strong>
-                        </li>
-                        <li class="flex items-center text-slate-700">
+                        <li class="flex items-center text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis">
                             <svg class="w-5 h-5 text-purple-600 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                             متابعون حقيقيون ونشطون لتعزيز تواجدك الرقمي
                         </li>
-                        <li class="flex items-center text-slate-700">
+                        <li class="flex items-center text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis">
                             <svg class="w-5 h-5 text-purple-600 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            تفاعل مميز وحسابات ذات جودة عالية (Premium)
+                            إمكانية استهداف الجنس والعمر (Premium)
                         </li>
-                        <li class="flex items-center text-slate-700">
+                        <li class="flex items-center text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis">
                             <svg class="w-5 h-5 text-purple-600 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                             ضمان عدم النقصان مع دعم فني مستمر
                         </li>
@@ -207,56 +203,135 @@
         </div>
     </div>
 
+    <!-- Features & Comparisons Section -->
+    <div class="py-16 px-2 sm:px-3 lg:px-4 bg-white border-t border-slate-100">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="text-purple-600 font-bold tracking-wider uppercase text-sm mb-2 block">لماذا نحن الأفضل؟</span>
+                <h2 class="text-3xl font-extrabold text-slate-900">أقوى منصة لزيادة المتابعين وربح المال</h2>
+                <p class="mt-4 text-lg text-slate-600">اكتشف الفرق بيننا وبين المنصات الأخرى ولماذا يفضلنا الآلاف</p>
+            </div>
+
+            <!-- Features Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 text-center hover:shadow-lg transition">
+                    <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-6 text-purple-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">أمان تام لحسابك</h3>
+                    <p class="text-slate-600">لا نطلب كلمة مرور حسابك أبداً. فقط ضع اسم المستخدم أو الرابط ونحن نتكفل بالباقي بأمان تام وموثوقية عالية.</p>
+                </div>
+                <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 text-center hover:shadow-lg transition">
+                    <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-6 text-purple-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">تنفيذ سريع ومجاني</h3>
+                    <p class="text-slate-600">بمجرد وصولك للهدف، يتم تنفيذ طلبك فوراً وبشكل مجاني بالكامل بدون أي رسوم خفية أو باقات مدفوعة.</p>
+                </div>
+                <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 text-center hover:shadow-lg transition">
+                    <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-6 text-purple-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">متابعون حقيقيون وتفاعل</h3>
+                    <p class="text-slate-600">نضمن لك متابعين حقيقيين ونشطين مع إمكانية استهداف الجنس والعمر لتحسين جودة حسابك بشكل احترافي.</p>
+                </div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right" dir="rtl">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200">
+                                <th class="p-6 text-slate-900 font-bold text-lg w-1/3">المميزات</th>
+                                <th class="p-6 text-purple-700 font-black text-xl w-1/3 bg-purple-50 text-center">منصتنا (PURPLE+)</th>
+                                <th class="p-6 text-slate-500 font-bold text-lg w-1/3 text-center">المنصات الأخرى</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr>
+                                <td class="p-6 font-medium text-slate-700">جودة المتابعين</td>
+                                <td class="p-6 bg-purple-50/50 text-center"><span class="inline-flex items-center text-green-600 font-bold"><svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> حقيقيون ونشطون</span></td>
+                                <td class="p-6 text-center"><span class="inline-flex items-center text-red-500"><svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> وهميون (Bots)</span></td>
+                            </tr>
+                            <tr>
+                                <td class="p-6 font-medium text-slate-700">التكلفة</td>
+                                <td class="p-6 bg-purple-50/50 text-center"><span class="inline-flex items-center text-green-600 font-bold"><svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> مجاني 100% بالمهام</span></td>
+                                <td class="p-6 text-center"><span class="inline-flex items-center text-red-500"><svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> باقات مدفوعة غالية</span></td>
+                            </tr>
+                            <tr>
+                                <td class="p-6 font-medium text-slate-700">طلب كلمة المرور</td>
+                                <td class="p-6 bg-purple-50/50 text-center"><span class="inline-flex items-center text-green-600 font-bold"><svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> لا نطلبها أبداً</span></td>
+                                <td class="p-6 text-center"><span class="inline-flex items-center text-red-500"><svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> يطلبونها (خطر الحظر)</span></td>
+                            </tr>
+                            <tr>
+                                <td class="p-6 font-medium text-slate-700">استهداف الجنس والعمر</td>
+                                <td class="p-6 bg-purple-50/50 text-center"><span class="inline-flex items-center text-green-600 font-bold"><svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> متوفر (Premium)</span></td>
+                                <td class="p-6 text-center"><span class="inline-flex items-center text-red-500"><svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> غير متوفر</span></td>
+                            </tr>
+                            <tr>
+                                <td class="p-6 font-medium text-slate-700">ربح المال كبديل</td>
+                                <td class="p-6 bg-purple-50/50 text-center"><span class="inline-flex items-center text-green-600 font-bold"><svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> نعم، يمكنك سحب كاش</span></td>
+                                <td class="p-6 text-center"><span class="inline-flex items-center text-red-500"><svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> لا يوجد</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Q&A / FAQ Section -->
     <div class="bg-slate-50 py-16 px-2 sm:px-3 lg:px-4 border-t border-slate-200">
         <div class="max-w-4xl mx-auto">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-extrabold text-slate-900">الأسئلة الشائعة (Q&A)</h2>
-                <p class="mt-4 text-lg text-slate-600">كل ما تحتاج لمعرفته حول طريقة العمل والمهام</p>
+                <span class="text-purple-600 font-bold tracking-wider uppercase text-sm mb-2 block">أسئلة وأجوبة</span>
+                <h2 class="text-3xl font-extrabold text-slate-900">كل ما تحتاج لمعرفته</h2>
+                <p class="mt-4 text-lg text-slate-600">إجابات سريعة للبدء في زيادة متابعيك وربح المال بسهولة</p>
             </div>
             
-            <div class="space-y-6">
+            <div class="space-y-6" dir="rtl">
                 <!-- FAQ Item 1 -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                    <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center">
-                        <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center ml-3 shrink-0">?</span>
-                        هل المنصة مجانية بالكامل؟
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition group">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center group-hover:text-purple-700 transition">
+                        <span class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center ml-4 shrink-0 font-black text-lg">1</span>
+                        هل سأحصل على متابعين حقيقيين أم وهميين؟
                     </h3>
-                    <p class="text-slate-600 leading-relaxed pl-11">
-                        نعم! المنصة مجانية 100%. لا يوجد أي باقات مدفوعة أو طلب أموال. نحن نعتمد على نظام التعاون وتبادل المنفعة؛ حيث تقوم بإنجاز المهام للحصول على نقاط وتساهم في إنجاز مهام الآخرين.
+                    <p class="text-slate-600 leading-relaxed pl-14 pr-14 text-right">
+                        نحن نضمن لك <strong>متابعين حقيقيين 100%</strong> يتفاعلون مع محتواك. بفضل نظام تبادل المنفعة، المتابعون هم أشخاص حقيقيون مثلك يقومون بإنجاز المهام.
                     </p>
                 </div>
 
                 <!-- FAQ Item 2 -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                    <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center">
-                        <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center ml-3 shrink-0">?</span>
-                        كيف أبدأ العمل وأنجز المهام؟
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition group">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center group-hover:text-purple-700 transition">
+                        <span class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center ml-4 shrink-0 font-black text-lg">2</span>
+                        هل احتاج لدفع أي أموال للبدء؟
                     </h3>
-                    <p class="text-slate-600 leading-relaxed pl-11">
-                        بعد تسجيل حسابك، توجه إلى لوحة التحكم (Dashboard). ستجد قائمة بمهام اليوم (مثل متابعة حساب انستغرام). يجب عليك الضغط على "تنفيذ المهمة"، وسيفتح لك رابط المهمة، بعد قيامك بها، عد للمنصة واضغط "تأكيد".
+                    <p class="text-slate-600 leading-relaxed pl-14 pr-14 text-right">
+                        إطلاقاً! <strong>المنصة مجانية بالكامل.</strong> لن نطلب منك بطاقة بنكية أو رسوم خفية. وقتك وجهدك في إنجاز المهام هما العملة الوحيدة هنا.
                     </p>
                 </div>
 
                 <!-- FAQ Item 3 -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                    <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center">
-                        <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center ml-3 shrink-0">?</span>
-                        ما هي "الدعوة النشطة" وكيف أحصل عليها؟
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition group">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center group-hover:text-purple-700 transition">
+                        <span class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center ml-4 shrink-0 font-black text-lg">3</span>
+                        هل حسابي آمن؟ هل تطلبون كلمة المرور؟
                     </h3>
-                    <p class="text-slate-600 leading-relaxed pl-11">
-                        الدعوة النشطة هي عندما تقوم بدعوة صديق للتسجيل عبر رابطك الخاص، ويقوم هذا الصديق بإنجاز <strong class="text-purple-600">50% من المهام</strong> بالإضافة إلى قيامه بـ <strong class="text-purple-600">دعوة 50 شخصاً</strong>. يمكنك نشر رابطك في مجموعات فيسبوك، واتساب، أو تليجرام لجلب الدعوات بسرعة.
+                    <p class="text-slate-600 leading-relaxed pl-14 pr-14 text-right">
+                        <strong>حسابك في أمان تام.</strong> نحن لا نطلب كلمة المرور الخاصة بحسابك على انستغرام. كل ما نحتاجه هو رابط الصفحة أو اسم المستخدم لإرسال المتابعين لك.
                     </p>
                 </div>
 
                 <!-- FAQ Item 4 -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                    <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center">
-                        <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center ml-3 shrink-0">?</span>
-                        كيف أستلم جائزتي (المال أو المتابعين)؟
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition group">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center group-hover:text-purple-700 transition">
+                        <span class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center ml-4 shrink-0 font-black text-lg">4</span>
+                        كيف يمكنني تحقيق هدفي بسرعة؟
                     </h3>
-                    <p class="text-slate-600 leading-relaxed pl-11">
-                        تأكد أولاً من إضافة بياناتك في صفحة "الإعدادات" (اسم حساب انستغرام الخاص بك، ومعلومات الدفع مثل CCP أو Binance). عندما يكتمل شريط التقدم في لوحة التحكم ويصل لـ 100%، سيظهر لك زر سحب المكافأة مباشرة!
+                    <p class="text-slate-600 leading-relaxed pl-14 pr-14 text-right">
+                        السر يكمن في <strong>الدعوات النشطة</strong>. شارك رابط الإحالة الخاص بك مع أصدقائك أو في مجموعات فيسبوك وواتساب. كلما زاد عدد من يسجلون ويعملون عبر رابطك، زادت سرعتك في الوصول للهدف.
                     </p>
                 </div>
             </div>

@@ -57,7 +57,7 @@
             </div>
             {% endif %}
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="bg-white rounded-xl p-4 shadow-sm border border-purple-100 text-center relative overflow-hidden">
                     <div class="text-sm text-slate-500 mb-1">المهام المنجزة</div>
                     <div class="text-2xl font-black text-slate-900">{{ tasks_completed }} <span class="text-sm text-slate-400 font-normal">/ {{ target_tasks }}</span></div>
@@ -68,9 +68,31 @@
                     <div class="text-2xl font-black text-slate-900">{{ invites_completed }} <span class="text-sm text-slate-400 font-normal">/ {{ target_invites }}</span></div>
                     <div class="absolute bottom-0 left-0 w-full h-1 bg-green-100"><div class="h-full bg-green-500" style="width: {{ (invites_completed / target_invites * 100) }}%"></div></div>
                 </div>
+                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-200 text-center relative overflow-hidden">
+                    <div class="text-sm text-slate-500 mb-1">دعوات غير نشطة بعد</div>
+                    <div class="text-2xl font-black text-slate-600">{{ inactive_invites }}</div>
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-slate-200"><div class="h-full bg-slate-400" style="width: 100%"></div></div>
+                </div>
             </div>
 
-            {% if tasks_completed >= target_tasks and invites_completed >= target_invites %}
+            {% if has_pending_withdrawal %}
+            <div class="mt-6 text-center">
+                <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center">
+                    <svg class="w-8 h-8 text-blue-600 mb-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    المهام قيد المراجعة
+                    <span class="text-sm font-normal mt-1 block">يرجى الانتظار، طلبك قيد المراجعة من قبل الإدارة للحصول على الجائزة.</span>
+                </div>
+            </div>
+            {% elif has_missing_info %}
+            <div class="mt-6 text-center">
+                <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-4 rounded-xl flex flex-col items-center justify-center">
+                    <svg class="w-8 h-8 text-red-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <span class="font-bold">يرجى إدخال المعلومات من الإعدادات</span>
+                    <span class="text-sm mt-1 mb-3 block">تحتاج إلى إكمال بيانات حسابك (انستغرام والدفع/الصفحة المستهدفة) قبل التمكن من السحب.</span>
+                    <a href="{{ url_for('settings') }}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition text-sm shadow-sm">الذهاب للإعدادات</a>
+                </div>
+            </div>
+            {% elif tasks_completed >= target_tasks and invites_completed >= target_invites %}
             <div class="mt-6 text-center">
                 <form action="{{ url_for('claim_goal') }}" method="POST">
                     <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow-md transition transform hover:-translate-y-1">
