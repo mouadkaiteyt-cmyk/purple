@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+html = """{% extends "base.html" %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto pb-20">

@@ -27,25 +27,18 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
-    balance = db.Column(db.Float, default=0.0)
-    is_upgraded = db.Column(db.Boolean, default=False)
     is_admin = db.Column(db.Boolean, default=False)
     referral_code = db.Column(db.String(20), unique=True, nullable=False)
     referred_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    ccp_account = db.Column(db.String(50), nullable=True) # Used for all payment methods as the account ID
-    payment_method = db.Column(db.String(20), default='ccp') # ccp, binance, paypal, orange_cash
+    ccp_account = db.Column(db.String(50), nullable=True) 
+    payment_method = db.Column(db.String(20), default='ccp') 
     ccp_last_changed = db.Column(db.DateTime, nullable=True)
-    auto_withdraw_threshold = db.Column(db.Integer, nullable=True)
     instagram_username = db.Column(db.String(50), nullable=True)
     instagram_last_changed = db.Column(db.DateTime, nullable=True)
-    tiktok_username = db.Column(db.String(50), nullable=True)
-    tiktok_last_changed = db.Column(db.DateTime, nullable=True)
-    membership_type = db.Column(db.String(20), default='free') # free, vip_10_days, vip_lifetime
-    membership_expires_at = db.Column(db.DateTime, nullable=True)
-    gender = db.Column(db.String(10), default='male') # male, female
+    gender = db.Column(db.String(10), default='male') 
     age = db.Column(db.Integer, default=18)
-
-    fast_goal_activated = db.Column(db.Boolean, default=False)
+    
+    goal_choice = db.Column(db.String(20), default='money') # 'money' or 'followers'
     fast_goal_tasks_completed = db.Column(db.Integer, default=0)
     fast_goal_tasks_today = db.Column(db.Integer, default=0)
     fast_goal_last_task_date = db.Column(db.Date, nullable=True)
@@ -53,41 +46,28 @@ class User(UserMixin, db.Model):
 
     referrals = db.relationship('User', backref=db.backref('referrer', remote_side=[id]))
 
-    @property
-    def is_upgraded(self):
-        if self.membership_type == 'vip_lifetime':
-            return True
-        if self.membership_type == 'vip_10_days':
-            if self.membership_expires_at and self.membership_expires_at > datetime.utcnow():
-                return True
-        return False
-
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
     link = db.Column(db.String(500), nullable=True)
-    reward_normal = db.Column(db.Float, default=0.1)
-    reward_upgraded = db.Column(db.Float, default=1.0)
     max_completions = db.Column(db.Integer, nullable=True)
-    target_gender = db.Column(db.String(10), default='all') # all, male, female
+    target_gender = db.Column(db.String(10), default='all')
     min_age = db.Column(db.Integer, nullable=True)
     max_age = db.Column(db.Integer, nullable=True)
-    is_boosted = db.Column(db.Boolean, default=False)
 
 class CompletedTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
     completed_at = db.Column(db.DateTime, default=datetime.utcnow)
-    completion_type = db.Column(db.String(20), default='normal') # 'normal' or 'fast_goal'
 
 class WithdrawalRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    ccp_account = db.Column(db.String(50), nullable=False) # Store the account ID
-    payment_method = db.Column(db.String(20), default='ccp') # ccp, binance, paypal, orange_cash
+    ccp_account = db.Column(db.String(50), nullable=False) 
+    payment_method = db.Column(db.String(20), default='ccp') 
     status = db.Column(db.String(20), default='pending') # pending, approved, rejected
     rejection_reason = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -99,57 +79,15 @@ class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     message = db.Column(db.String(500), nullable=False)
-    type = db.Column(db.String(20), default='info') # success, danger
+    type = db.Column(db.String(20), default='info') 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', backref=db.backref('notifications', lazy=True))
 
 class AppConfig(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    normal_daily_limit = db.Column(db.Integer, default=4)
-    upgraded_daily_limit = db.Column(db.Integer, default=10)
-    telegram_agent_link = db.Column(db.String(200), default='https://t.me/YourAgent')
+    daily_task_limit = db.Column(db.Integer, default=10)
     instagram_agent_link = db.Column(db.String(200), default='https://instagram.com/YourAgent')
-    total_revenue = db.Column(db.Float, default=0.0)
-
-class Advertisement(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    image_url = db.Column(db.String(500), nullable=False)
-    target_url = db.Column(db.String(500), nullable=False)
-    is_active = db.Column(db.Boolean, default=True)
-    views = db.Column(db.Integer, default=0)
-    clicks = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    image_url = db.Column(db.String(500), nullable=True)
-    product_type = db.Column(db.String(50), default='digital_link') # digital_link, digital_code, physical
-    file_url = db.Column(db.String(500), nullable=True) # For digital_link
-    code_content = db.Column(db.Text, nullable=True) # For digital_code
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-class Purchase(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    price_paid = db.Column(db.Float, nullable=False)
-    purchased_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # For physical products
-    delivery_name = db.Column(db.String(100), nullable=True)
-    delivery_phone = db.Column(db.String(20), nullable=True)
-    delivery_state = db.Column(db.String(100), nullable=True)
-    status = db.Column(db.String(20), default='completed') # completed (digital), pending/shipped/delivered (physical)
-    
-    # For digital code products
-    code_received = db.Column(db.Text, nullable=True)
-    
-    user = db.relationship('User', backref=db.backref('purchases', lazy=True))
-    product = db.relationship('Product', backref=db.backref('purchases', lazy=True))
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -164,7 +102,6 @@ def admin_required(f):
     return decorated_function
 
 def model_to_dict(obj):
-    """Convert SQLAlchemy model instance to dictionary."""
     d = {}
     for column in obj.__table__.columns:
         val = getattr(obj, column.name)
@@ -174,130 +111,42 @@ def model_to_dict(obj):
             d[column.name] = val
     return d
 
-def check_auto_withdraw(user):
-    pass # Deprecated in favor of manual withdrawal
-
 with app.app_context():
     db.create_all()
     
-    # Auto-migrate new columns
+    # Simple migration for new columns
     try:
         inspector = inspect(db.engine)
         if 'user' in inspector.get_table_names():
             columns = [col['name'] for col in inspector.get_columns('user')]
-            if 'tiktok_username' not in columns:
-                db.session.execute(text('ALTER TABLE "user" ADD COLUMN tiktok_username VARCHAR(50)'))
-            if 'tiktok_last_changed' not in columns:
-                db.session.execute(text('ALTER TABLE "user" ADD COLUMN tiktok_last_changed TIMESTAMP'))
-            if 'membership_type' not in columns:
-                db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN membership_type VARCHAR(20) DEFAULT 'free'"))
-                db.session.execute(text("UPDATE \"user\" SET membership_type = 'vip_lifetime' WHERE is_upgraded = 1"))
-            if 'membership_expires_at' not in columns:
-                db.session.execute(text('ALTER TABLE "user" ADD COLUMN membership_expires_at TIMESTAMP'))
-            if 'gender' not in columns:
-                db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN gender VARCHAR(10) DEFAULT 'male'"))
-            if 'age' not in columns:
-                db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN age INTEGER DEFAULT 18"))
-            if 'fast_goal_activated' not in columns:
-                db.session.execute(text('ALTER TABLE "user" ADD COLUMN fast_goal_activated BOOLEAN DEFAULT 0'))
-            if 'fast_goal_tasks_completed' not in columns:
-                db.session.execute(text('ALTER TABLE "user" ADD COLUMN fast_goal_tasks_completed INTEGER DEFAULT 0'))
-            if 'fast_goal_tasks_today' not in columns:
-                db.session.execute(text('ALTER TABLE "user" ADD COLUMN fast_goal_tasks_today INTEGER DEFAULT 0'))
-            if 'fast_goal_last_task_date' not in columns:
-                db.session.execute(text('ALTER TABLE "user" ADD COLUMN fast_goal_last_task_date DATE'))
-            if 'fast_goal_claimed' not in columns:
-                db.session.execute(text('ALTER TABLE "user" ADD COLUMN fast_goal_claimed BOOLEAN DEFAULT 0'))
-        if 'task' in inspector.get_table_names():
-            columns = [col['name'] for col in inspector.get_columns('task')]
-            if 'link' not in columns:
-                db.session.execute(text('ALTER TABLE task ADD COLUMN link VARCHAR(500)'))
-            if 'max_completions' not in columns:
-                db.session.execute(text('ALTER TABLE task ADD COLUMN max_completions INTEGER'))
-            if 'target_gender' not in columns:
-                db.session.execute(text("ALTER TABLE task ADD COLUMN target_gender VARCHAR(10) DEFAULT 'all'"))
-            if 'min_age' not in columns:
-                db.session.execute(text('ALTER TABLE task ADD COLUMN min_age INTEGER'))
-            if 'max_age' not in columns:
-                db.session.execute(text('ALTER TABLE task ADD COLUMN max_age INTEGER'))
-            if 'is_boosted' not in columns:
-                db.session.execute(text('ALTER TABLE task ADD COLUMN is_boosted BOOLEAN DEFAULT 0'))
-        if 'completed_task' in inspector.get_table_names():
-            columns = [col['name'] for col in inspector.get_columns('completed_task')]
-            if 'completed_at' not in columns:
-                db.session.execute(text('ALTER TABLE completed_task ADD COLUMN completed_at TIMESTAMP'))
-                db.session.execute(text("UPDATE completed_task SET completed_at = CURRENT_TIMESTAMP WHERE completed_at IS NULL"))
-            if 'completion_type' not in columns:
-                db.session.execute(text("ALTER TABLE completed_task ADD COLUMN completion_type VARCHAR(20) DEFAULT 'normal'"))
-        if 'withdrawal_request' in inspector.get_table_names():
-            columns = [col['name'] for col in inspector.get_columns('withdrawal_request')]
-            if 'rejection_reason' not in columns:
-                db.session.execute(text('ALTER TABLE withdrawal_request ADD COLUMN rejection_reason VARCHAR(200)'))
-        if 'notification' not in inspector.get_table_names():
-            Notification.__table__.create(db.engine)
-        if 'product' not in inspector.get_table_names():
-            Product.__table__.create(db.engine)
-        if 'purchase' not in inspector.get_table_names():
-            Purchase.__table__.create(db.engine)
-        else:
-            columns = [col['name'] for col in inspector.get_columns('purchase')]
-            if 'code_received' not in columns:
-                db.session.execute(text('ALTER TABLE purchase ADD COLUMN code_received TEXT'))
-        
-        if 'app_config' in inspector.get_table_names():
-            columns = [col['name'] for col in inspector.get_columns('app_config')]
-            if 'telegram_agent_link' not in columns:
-                db.session.execute(text("ALTER TABLE app_config ADD COLUMN telegram_agent_link VARCHAR(200) DEFAULT 'https://t.me/YourAgent'"))
-            if 'instagram_agent_link' not in columns:
-                db.session.execute(text("ALTER TABLE app_config ADD COLUMN instagram_agent_link VARCHAR(200) DEFAULT 'https://instagram.com/YourAgent'"))
-            if 'total_revenue' not in columns:
-                db.session.execute(text("ALTER TABLE app_config ADD COLUMN total_revenue FLOAT DEFAULT 0.0"))
-        if 'product' in inspector.get_table_names():
-            columns = [col['name'] for col in inspector.get_columns('product')]
-            if 'product_type' not in columns:
-                db.session.execute(text("ALTER TABLE product ADD COLUMN product_type VARCHAR(50) DEFAULT 'digital_link'"))
-            if 'code_content' not in columns:
-                db.session.execute(text("ALTER TABLE product ADD COLUMN code_content TEXT"))
-            # Make file_url nullable if possible (SQLite doesn't support ALTER COLUMN easily, so we just add the new ones)
-
-        if 'purchase' in inspector.get_table_names():
-            columns = [col['name'] for col in inspector.get_columns('purchase')]
-            if 'delivery_name' not in columns:
-                db.session.execute(text("ALTER TABLE purchase ADD COLUMN delivery_name VARCHAR(100)"))
-            if 'delivery_phone' not in columns:
-                db.session.execute(text("ALTER TABLE purchase ADD COLUMN delivery_phone VARCHAR(20)"))
-            if 'delivery_state' not in columns:
-                db.session.execute(text("ALTER TABLE purchase ADD COLUMN delivery_state VARCHAR(100)"))
-            if 'status' not in columns:
-                db.session.execute(text("ALTER TABLE purchase ADD COLUMN status VARCHAR(20) DEFAULT 'completed'"))
-
-        db.session.commit()
+            if 'goal_choice' not in columns:
+                db.session.execute(text("ALTER TABLE \"user\" ADD COLUMN goal_choice VARCHAR(20) DEFAULT 'money'"))
+                db.session.commit()
     except Exception as e:
         print(f"Migration error: {e}")
         db.session.rollback()
 
-    # Create an AppConfig automatically if none exists
     if not AppConfig.query.first():
-        config = AppConfig(normal_daily_limit=4, upgraded_daily_limit=10)
+        config = AppConfig(daily_task_limit=10)
         db.session.add(config)
         db.session.commit()
 
-    # Create an admin user automatically if none exists
     if not User.query.filter_by(is_admin=True).first():
         admin_user = User(
             username='admin',
             email='admin@admin.com',
             password_hash=generate_password_hash('admin123'),
             is_admin=True,
-            is_upgraded=True,
-            membership_type='vip_lifetime',
-            referral_code=str(uuid.uuid4())[:8]
+            referral_code=str(uuid.uuid4())[:8],
+            goal_choice='money'
         )
         db.session.add(admin_user)
         db.session.commit()
 
 @app.route('/')
 def index():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
     return render_template('index.html')
 
 @app.route('/sw.js')
@@ -334,6 +183,7 @@ def register():
         password = request.form.get('password')
         gender = request.form.get('gender', 'male')
         age = request.form.get('age', 18, type=int)
+        goal_choice = request.form.get('goal_choice', 'money')
         ref_code_post = request.form.get('ref_code', '')
 
         user_exists = User.query.filter((User.username == username) | (User.email == email)).first()
@@ -349,7 +199,6 @@ def register():
             referrer = User.query.filter_by(referral_code=ref_code_post).first()
             if referrer:
                 referred_by_id = referrer.id
-                # Note: We no longer reward immediately. The reward is given when the referred user completes 10 tasks.
 
         new_user = User(
             username=username,
@@ -357,6 +206,7 @@ def register():
             password_hash=hashed_password,
             gender=gender,
             age=age,
+            goal_choice=goal_choice,
             referral_code=new_referral_code,
             referred_by=referred_by_id
         )
@@ -411,111 +261,194 @@ def read_notification(notif_id):
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Reset daily fast goal tasks if it's a new day
-    if current_user.fast_goal_activated and current_user.fast_goal_last_task_date != datetime.utcnow().date():
+    if current_user.fast_goal_last_task_date != datetime.utcnow().date():
         current_user.fast_goal_tasks_today = 0
         current_user.fast_goal_last_task_date = datetime.utcnow().date()
         db.session.commit()
 
-    fast_goal_valid_referrals = 0
-    if current_user.fast_goal_activated:
-        fg_referrals = User.query.filter_by(referred_by=current_user.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 20).all()
-        for r in fg_referrals:
-            r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 10).count()
-            if r_invites >= 200:
-                fast_goal_valid_referrals += 1
-
+    # Calculate active referrals
+    valid_referrals_count = 0
     all_referred = User.query.filter_by(referred_by=current_user.id).all()
-    pending_referrals_count = 0
-    active_referrals_count = 0
-    
-    for r_user in all_referred:
-        completed_count = CompletedTask.query.filter_by(user_id=r_user.id).count()
-        if completed_count >= 10:
-            active_referrals_count += 1
-        else:
-            pending_referrals_count += 1
+    for r in all_referred:
+        # A referral is considered active if they completed at least 10 tasks
+        if r.fast_goal_tasks_completed >= 10:
+            valid_referrals_count += 1
             
     referrals_count = len(all_referred)
-    all_tasks = Task.query.all()
-    all_completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
-    
-    # Calculate tasks stats
-    total_tasks = len(all_tasks)
-    completed_tasks_count = len(all_completed_task_ids)
     
     config = AppConfig.query.first()
     notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
     
-    ads = Advertisement.query.filter_by(is_active=True).all()
-    for ad in ads:
-        ad.views += 1
-    db.session.commit()
+    # Progress Calculation
+    target_tasks = 100
+    target_invites = 100 if current_user.goal_choice == 'money' else 200
+    
+    tasks_completed = min(current_user.fast_goal_tasks_completed, target_tasks)
+    invites_completed = min(valid_referrals_count, target_invites)
+    
+    tasks_progress = (tasks_completed / target_tasks) * 100
+    invites_progress = (invites_completed / target_invites) * 100
+    total_progress = (tasks_progress + invites_progress) / 2
+    
+    # Fetch tasks
+    all_completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
+    query = Task.query
+    if all_completed_task_ids:
+        query = query.filter(~Task.id.in_(all_completed_task_ids))
+        
+    if current_user.gender:
+        query = query.filter((Task.target_gender == 'all') | (Task.target_gender == current_user.gender))
+        
+    if current_user.age:
+        query = query.filter((Task.min_age == None) | (Task.min_age <= current_user.age))
+        query = query.filter((Task.max_age == None) | (Task.max_age >= current_user.age))
+        
+    uncompleted_tasks_raw = query.order_by(Task.id.desc()).all()
+    
+    available_tasks = []
+    for t in uncompleted_tasks_raw:
+        if t.max_completions:
+            c_count = CompletedTask.query.filter_by(task_id=t.id).count()
+            if c_count >= t.max_completions:
+                continue
+        available_tasks.append(t)
+        
+    limit = config.daily_task_limit if config else 10
+    remaining_slots = max(0, limit - current_user.fast_goal_tasks_today)
+    tasks_to_show = available_tasks[:remaining_slots]
+
+    # Include tasks completed today
+    today = datetime.utcnow().date()
+    today_completions = CompletedTask.query.filter(
+        CompletedTask.user_id == current_user.id,
+        db.func.date(CompletedTask.completed_at) == today
+    ).all()
+    today_completed_task_ids = [ct.task_id for ct in today_completions]
+
+    if today_completed_task_ids:
+        today_completed_tasks = Task.query.filter(Task.id.in_(today_completed_task_ids)).all()
+    else:
+        today_completed_tasks = []
+
+    all_tasks_to_show = tasks_to_show + today_completed_tasks
     
     return render_template('dashboard.html', 
                            user=current_user, 
                            referrals_count=referrals_count,
-                           fast_goal_valid_referrals=fast_goal_valid_referrals,
-                           active_referrals_count=active_referrals_count,
-                           pending_referrals_count=pending_referrals_count,
-                           tasks=all_tasks,
-                           completed_task_ids=all_completed_task_ids,
-                           total_tasks=total_tasks,
-                           completed_tasks_count=completed_tasks_count,
+                           valid_referrals_count=valid_referrals_count,
+                           tasks=all_tasks_to_show,
                            config=config,
                            notifications=notifications,
-                           ads=ads)
+                           target_tasks=target_tasks,
+                           target_invites=target_invites,
+                           tasks_completed=tasks_completed,
+                           invites_completed=invites_completed,
+                           total_progress=total_progress,
+                           remaining_slots=remaining_slots,
+                           completed_task_ids=today_completed_task_ids)
 
-@app.route('/ad_click/<int:ad_id>')
-def ad_click(ad_id):
-    ad = Advertisement.query.get_or_404(ad_id)
-    ad.clicks += 1
-    db.session.commit()
-    return redirect(ad.target_url)
-
-@app.route('/withdraw', methods=['POST'])
+@app.route('/tasks/complete/<int:task_id>', methods=['POST'])
 @login_required
-def manual_withdraw():
-    amount = request.form.get('amount', type=int)
+def complete_task(task_id):
+    if current_user.fast_goal_last_task_date != datetime.utcnow().date():
+        current_user.fast_goal_tasks_today = 0
+        current_user.fast_goal_last_task_date = datetime.utcnow().date()
+        
+    config = AppConfig.query.first()
+    limit = config.daily_task_limit if config else 10
     
-    if amount not in [40, 80, 120]:
-        flash('مبلغ السحب غير صالح.', 'danger')
-        return redirect(url_for('settings'))
+    if current_user.fast_goal_tasks_today >= limit:
+        flash(f'لقد أكملت الحد الأقصى من المهام لهذا اليوم ({limit} مهام).', 'warning')
+        return redirect(url_for('dashboard'))
         
-    if not current_user.ccp_account or not current_user.tiktok_username or not current_user.instagram_username:
-        flash('يرجى إضافة جميع معلومات الحساب', 'danger')
-        return redirect(url_for('settings'))
+    task = Task.query.get_or_404(task_id)
+    
+    if task.max_completions:
+        c_count = CompletedTask.query.filter_by(task_id=task.id).count()
+        if c_count >= task.max_completions:
+            flash('عذراً، هذه المهمة وصلت للحد الأقصى من الإنجازات ولم تعد متاحة.', 'danger')
+            return redirect(url_for('dashboard'))
+            
+    if task.target_gender != 'all' and task.target_gender != current_user.gender:
+        flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (الجنس).', 'danger')
+        return redirect(url_for('dashboard'))
         
-    if current_user.balance < amount:
-        flash('رصيدك غير كافٍ لطلب هذا السحب.', 'danger')
-        return redirect(url_for('settings'))
+    if current_user.age:
+        if task.min_age and current_user.age < task.min_age:
+            flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (العمر).', 'danger')
+            return redirect(url_for('dashboard'))
+        if task.max_age and current_user.age > task.max_age:
+            flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (العمر).', 'danger')
+            return redirect(url_for('dashboard'))
+
+    if CompletedTask.query.filter_by(user_id=current_user.id, task_id=task.id).first():
+        flash('لقد قمت بإنجاز هذه المهمة مسبقاً.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    new_completion = CompletedTask(user_id=current_user.id, task_id=task.id)
+    db.session.add(new_completion)
+    
+    current_user.fast_goal_tasks_today += 1
+    current_user.fast_goal_tasks_completed += 1
+            
+    if task.max_completions:
+        current_count = CompletedTask.query.filter_by(task_id=task.id).count()
+        if current_count >= task.max_completions:
+            db.session.delete(task)
+            
+    db.session.commit()
+    return redirect(url_for('dashboard'))
+
+@app.route('/claim_goal', methods=['POST'])
+@login_required
+def claim_goal():
+    if current_user.fast_goal_claimed:
+        flash('لقد قمت بسحب مكافأة الهدف مسبقاً.', 'info')
+        return redirect(url_for('dashboard'))
         
-    # Check conditions: 40 tasks completed, 100 active referrals
-    completed_tasks_count = CompletedTask.query.filter_by(user_id=current_user.id).count()
+    valid_referrals_count = 0
     all_referred = User.query.filter_by(referred_by=current_user.id).all()
-    active_referrals_count = sum(1 for r_user in all_referred if CompletedTask.query.filter_by(user_id=r_user.id).count() >= 10)
-    
-    if completed_tasks_count < 40 or active_referrals_count < 100:
-        flash('يجب إنجاز 40 مهمة على الأقل ودعوة 100 إحالة نشطة لتتمكن من السحب.', 'danger')
+    for r in all_referred:
+        if r.fast_goal_tasks_completed >= 10:
+            valid_referrals_count += 1
+            
+    target_tasks = 100
+    target_invites = 100 if current_user.goal_choice == 'money' else 200
+            
+    if valid_referrals_count < target_invites or current_user.fast_goal_tasks_completed < target_tasks:
+        flash('لم تكمل شروط الهدف بعد.', 'danger')
+        return redirect(url_for('dashboard'))
+        
+    if not current_user.instagram_username or not current_user.ccp_account:
+        flash('يرجى إضافة حساب انستغرام وبيانات الدفع في الإعدادات قبل السحب.', 'danger')
         return redirect(url_for('settings'))
         
     existing_request = WithdrawalRequest.query.filter_by(user_id=current_user.id, status='pending').first()
     if existing_request:
-        flash('لديك طلب سحب قيد المعالجة بالفعل.', 'danger')
-        return redirect(url_for('settings'))
+        flash('لديك طلب قيد المعالجة بالفعل.', 'danger')
+        return redirect(url_for('dashboard'))
         
-    current_user.balance -= amount
+    current_user.fast_goal_claimed = True
+    
+    amount = 80.0 if current_user.goal_choice == 'money' else 0.0
+    payment_method = current_user.payment_method
+    
     new_request = WithdrawalRequest(
         user_id=current_user.id, 
         amount=amount, 
         ccp_account=current_user.ccp_account,
-        payment_method=current_user.payment_method
+        payment_method=payment_method
     )
     db.session.add(new_request)
+    
+    msg = 'تهانينا! لقد حققت الهدف وتم إرسال طلبك بقيمة 80$.' if current_user.goal_choice == 'money' else 'تهانينا! لقد حققت الهدف وتم إرسال طلبك للحصول على 10,000 متابع.'
+    notif = Notification(user_id=current_user.id, message=msg, type='success')
+    db.session.add(notif)
+    
     db.session.commit()
     
-    flash('تم إرسال طلب السحب بنجاح!', 'success')
-    return redirect(url_for('settings'))
+    flash(msg, 'success')
+    return redirect(url_for('dashboard'))
 
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
@@ -523,16 +456,13 @@ def settings():
     if request.method == 'POST':
         ccp_account = request.form.get('ccp_account')
         payment_method = request.form.get('payment_method')
-        threshold = request.form.get('auto_withdraw_threshold')
         instagram = request.form.get('instagram_username')
-        tiktok = request.form.get('tiktok_username')
 
         now = datetime.utcnow()
         
         if payment_method and payment_method != current_user.payment_method:
             current_user.payment_method = payment_method
             
-        # CCP Account Logic (60 days rule)
         if ccp_account and ccp_account != current_user.ccp_account:
             existing_ccp = User.query.filter_by(ccp_account=ccp_account).first()
             if existing_ccp:
@@ -551,19 +481,13 @@ def settings():
                 else:
                     current_user.ccp_account = ccp_account
                     current_user.ccp_last_changed = now
-        elif not ccp_account:
-            pass
-        
-        # Auto withdraw threshold logic removed
 
-        # Instagram Logic (60 days rule)
         if instagram and instagram != current_user.instagram_username:
             existing_ig = User.query.filter_by(instagram_username=instagram).first()
             if existing_ig:
                 flash('حساب انستغرام مستخدم من قبل حساب آخر.', 'danger')
             else:
                 if current_user.instagram_last_changed:
-                    # Convert to offset-naive datetime before subtraction
                     last_changed = current_user.instagram_last_changed
                     if last_changed.tzinfo is not None:
                         last_changed = last_changed.replace(tzinfo=None)
@@ -576,37 +500,12 @@ def settings():
                 else:
                     current_user.instagram_username = instagram
                     current_user.instagram_last_changed = now
-        elif not instagram:
-            pass
-
-        # TikTok Logic (60 days rule)
-        if tiktok and tiktok != current_user.tiktok_username:
-            existing_tk = User.query.filter_by(tiktok_username=tiktok).first()
-            if existing_tk:
-                flash('حساب تيك توك مستخدم من قبل حساب آخر.', 'danger')
-            else:
-                if current_user.tiktok_last_changed:
-                    last_changed_tk = current_user.tiktok_last_changed
-                    if last_changed_tk.tzinfo is not None:
-                        last_changed_tk = last_changed_tk.replace(tzinfo=None)
-                    days_since_tk = (now - last_changed_tk).days
-                    if days_since_tk < 60:
-                        flash(f'لا يمكنك تغيير حساب تيك توك الآن. يرجى الانتظار {60 - days_since_tk} يوماً.', 'danger')
-                    else:
-                        current_user.tiktok_username = tiktok
-                        current_user.tiktok_last_changed = now
-                else:
-                    current_user.tiktok_username = tiktok
-                    current_user.tiktok_last_changed = now
-        elif not tiktok:
-            pass
 
         db.session.commit()
         if not get_flashed_messages(category_filter=['danger']):
             flash('تم حفظ الإعدادات بنجاح.', 'success')
         return redirect(url_for('settings'))
 
-    # Calculate remaining days for Instagram
     can_change_ig = True
     ig_days_remaining = 0
     if current_user.instagram_last_changed:
@@ -618,19 +517,6 @@ def settings():
             can_change_ig = False
             ig_days_remaining = 60 - days_since
 
-    # Calculate remaining days for TikTok
-    can_change_tk = True
-    tk_days_remaining = 0
-    if current_user.tiktok_last_changed:
-        last_changed_tk = current_user.tiktok_last_changed
-        if last_changed_tk.tzinfo is not None:
-            last_changed_tk = last_changed_tk.replace(tzinfo=None)
-        days_since_tk = (datetime.utcnow() - last_changed_tk).days
-        if days_since_tk < 60:
-            can_change_tk = False
-            tk_days_remaining = 60 - days_since_tk
-
-    # Calculate remaining days for CCP
     can_change_ccp = True
     ccp_days_remaining = 0
     if current_user.ccp_last_changed:
@@ -646,384 +532,8 @@ def settings():
                            user=current_user, 
                            can_change_ig=can_change_ig, 
                            ig_days_remaining=ig_days_remaining,
-                           can_change_tk=can_change_tk,
-                           tk_days_remaining=tk_days_remaining,
                            can_change_ccp=can_change_ccp,
                            ccp_days_remaining=ccp_days_remaining)
-
-@app.route('/upgrade_instructions/<plan>')
-@login_required
-def upgrade_instructions(plan):
-    if plan not in ['vip_10_days', 'vip_lifetime']:
-        abort(400)
-    
-    config = AppConfig.query.first()
-    return render_template('agent_upgrade.html', plan=plan, telegram_link=config.telegram_agent_link, instagram_link=config.instagram_agent_link)
-
-@app.route('/upgrade/<plan>', methods=['POST'])
-@login_required
-def upgrade(plan):
-    if current_user.membership_type == 'vip_lifetime':
-        flash('حسابك مطور مدى الحياة بالفعل.', 'info')
-        return redirect(url_for('dashboard'))
-        
-    if plan == 'vip_10_days':
-        price = 10.0
-    elif plan == 'vip_lifetime':
-        price = 40.0
-    else:
-        abort(400)
-        
-    if current_user.balance < price:
-        flash(f'رصيدك غير كافٍ للترقية. تحتاج إلى {price}$', 'danger')
-        return redirect(url_for('dashboard'))
-        
-    # Deduct balance
-    current_user.balance -= price
-    
-    current_user.membership_type = plan
-    config = AppConfig.query.first()
-    
-    if plan == 'vip_10_days':
-        if config:
-            config.total_revenue += 10.0
-        if current_user.membership_expires_at and current_user.membership_expires_at > datetime.utcnow():
-            current_user.membership_expires_at += timedelta(days=10)
-        else:
-            current_user.membership_expires_at = datetime.utcnow() + timedelta(days=10)
-    else:
-        if config:
-            config.total_revenue += 40.0
-        current_user.membership_expires_at = None
-        
-    db.session.commit()
-    flash('تم ترقية حسابك بنجاح!', 'success')
-    return redirect(url_for('dashboard'))
-
-@app.route('/merchant/boost', methods=['GET', 'POST'])
-@login_required
-def merchant_boost():
-    if request.method == 'POST':
-        plan = request.form.get('plan')
-        platform = request.form.get('platform')
-        username = request.form.get('username')
-        target_gender = request.form.get('target_gender', 'all')
-        min_age = request.form.get('min_age')
-        max_age = request.form.get('max_age')
-        
-        # Build the link based on platform
-        if platform == 'tiktok':
-            link = f'https://tiktok.com/@{username}' if not username.startswith('@') else f'https://tiktok.com/{username}'
-            title = 'متابعة حساب تيك توك (مدعوم)'
-        else: # default to instagram
-            link = f'https://instagram.com/{username}'
-            title = 'متابعة حساب انستغرام (مدعوم)'
-        
-        min_age = int(min_age) if min_age else None
-        max_age = int(max_age) if max_age else None
-        
-        if plan == '1000':
-            price = 10.0
-            followers = 1000
-            reward = 0.005 # Platform profit
-        elif plan == '5000':
-            price = 40.0
-            followers = 5000
-            reward = 0.005 # Platform profit
-        elif plan == '10000':
-            price = 70.0
-            followers = 10000
-            reward = 0.005
-        elif plan == '50000':
-            price = 300.0
-            followers = 50000
-            reward = 0.005
-        elif plan == '100000':
-            price = 500.0
-            followers = 100000
-            reward = 0.005
-        else:
-            flash('خطة غير صالحة', 'danger')
-            return redirect(url_for('merchant_boost'))
-            
-        if current_user.balance < price:
-            flash('رصيدك غير كافٍ. يرجى إنجاز المهام لجمع الرصيد المطلوب.', 'danger')
-            return redirect(url_for('merchant_boost'))
-            
-        current_user.balance -= price
-        
-        new_task = Task(
-            title=title,
-            description='يرجى متابعة هذا الحساب لدعمه.',
-            link=link,
-            reward_normal=reward,
-            reward_upgraded=reward,
-            max_completions=followers,
-            target_gender=target_gender,
-            min_age=min_age,
-            max_age=max_age,
-            is_boosted=True
-        )
-        db.session.add(new_task)
-        
-        config = AppConfig.query.first()
-        if config:
-            config.total_revenue += price
-            
-        db.session.commit()
-        
-        flash('تمت إضافة حملتك بنجاح! ستظهر مهمتك في أعلى قائمة المهام.', 'success')
-        return redirect(url_for('dashboard'))
-        
-    config = AppConfig.query.first()
-    return render_template('merchant_boost.html', user=current_user, config=config)
-
-@app.route('/tasks')
-@login_required
-def tasks():
-    all_completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
-    
-    # Get recent completions in last 24 hours
-    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
-    recent_completions = CompletedTask.query.filter(
-        CompletedTask.user_id == current_user.id,
-        CompletedTask.completion_type == 'normal',
-        CompletedTask.completed_at >= twenty_four_hours_ago
-    ).count()
-    
-    config = AppConfig.query.first()
-    if current_user.is_upgraded:
-        limit = config.upgraded_daily_limit
-    else:
-        # Check and downgrade if expired
-        if current_user.membership_type == 'vip_10_days' and current_user.membership_expires_at and current_user.membership_expires_at <= datetime.utcnow():
-            current_user.membership_type = 'free'
-            current_user.membership_expires_at = None
-            db.session.commit()
-        limit = config.normal_daily_limit
-        
-    available_slots = max(0, limit - recent_completions)
-    
-    # Build query for available tasks
-    query = Task.query
-    if all_completed_task_ids:
-        query = query.filter(~Task.id.in_(all_completed_task_ids))
-        
-    # Filter by gender
-    if current_user.gender:
-        query = query.filter((Task.target_gender == 'all') | (Task.target_gender == current_user.gender))
-        
-    # Filter by age
-    if current_user.age:
-        query = query.filter((Task.min_age == None) | (Task.min_age <= current_user.age))
-        query = query.filter((Task.max_age == None) | (Task.max_age >= current_user.age))
-        
-    uncompleted_tasks_raw = query.order_by(Task.is_boosted.desc(), Task.id.desc()).all()
-    
-    # Filter out tasks that reached max_completions
-    uncompleted_tasks = []
-    for t in uncompleted_tasks_raw:
-        if t.max_completions:
-            c_count = CompletedTask.query.filter_by(task_id=t.id).count()
-            if c_count >= t.max_completions:
-                continue
-        uncompleted_tasks.append(t)
-        
-    uncompleted_tasks = uncompleted_tasks[:available_slots]
-    
-    normal_completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id, completion_type='normal').all()]
-
-    if normal_completed_task_ids:
-        completed_tasks = Task.query.filter(Task.id.in_(normal_completed_task_ids)).all()
-    else:
-        completed_tasks = []
-
-    all_tasks_to_show = uncompleted_tasks + completed_tasks
-
-    return render_template('tasks.html',
-                           tasks=all_tasks_to_show,
-                           completed_task_ids=normal_completed_task_ids,
-                           limit=limit,
-                           recent_completions=recent_completions)
-
-@app.route('/tasks/complete/<int:task_id>', methods=['POST'])
-@login_required
-def complete_task(task_id):
-    # Verify daily limit first
-    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
-    recent_completions = CompletedTask.query.filter(
-        CompletedTask.user_id == current_user.id,
-        CompletedTask.completion_type == 'normal',
-        CompletedTask.completed_at >= twenty_four_hours_ago
-    ).count()
-    
-    config = AppConfig.query.first()
-    limit = config.upgraded_daily_limit if current_user.is_upgraded else config.normal_daily_limit
-    if recent_completions >= limit:
-        flash('لقد وصلت للحد الأقصى من المهام المتاحة لك خلال 24 ساعة.', 'danger')
-        return redirect(url_for('tasks'))
-
-    task = Task.query.get_or_404(task_id)
-    
-    # Check max completions limit
-    if task.max_completions:
-        c_count = CompletedTask.query.filter_by(task_id=task.id).count()
-        if c_count >= task.max_completions:
-            flash('عذراً، هذه المهمة وصلت للحد الأقصى من الإنجازات ولم تعد متاحة.', 'danger')
-            return redirect(url_for('tasks'))
-            
-    # Check gender targeting
-    if task.target_gender != 'all' and task.target_gender != current_user.gender:
-        flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (الجنس).', 'danger')
-        return redirect(url_for('tasks'))
-        
-    # Check age targeting
-    if current_user.age:
-        if task.min_age and current_user.age < task.min_age:
-            flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (العمر).', 'danger')
-            return redirect(url_for('tasks'))
-        if task.max_age and current_user.age > task.max_age:
-            flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (العمر).', 'danger')
-            return redirect(url_for('tasks'))
-
-    # Check if already completed
-    if CompletedTask.query.filter_by(user_id=current_user.id, task_id=task.id).first():
-        flash('لقد قمت بإنجاز هذه المهمة مسبقاً.', 'danger')
-        return redirect(url_for('tasks'))
-    
-    new_completion = CompletedTask(user_id=current_user.id, task_id=task.id, completion_type='normal')
-    db.session.add(new_completion)
-    
-    reward = task.reward_upgraded if current_user.is_upgraded else task.reward_normal
-    current_user.balance += reward
-    db.session.commit()
-    
-    # Check if this user just reached 10 tasks to reward their referrer
-    user_completed_count = CompletedTask.query.filter_by(user_id=current_user.id).count()
-    if user_completed_count == 10 and current_user.referred_by:
-        referrer = User.query.get(current_user.referred_by)
-        if referrer:
-            give_reward = True
-            if referrer.fast_goal_activated and not referrer.is_upgraded:
-                give_reward = False
-                
-            if give_reward:
-                if referrer.is_upgraded:
-                    referrer.balance += 0.2
-                else:
-                    referrer.balance += 0.05
-            db.session.commit()
-            
-    # If boosted task and reached max_completions, delete it
-    if task.is_boosted and task.max_completions:
-        current_count = CompletedTask.query.filter_by(task_id=task.id).count()
-        if current_count >= task.max_completions:
-            db.session.delete(task)
-            db.session.commit()
-
-    return redirect(url_for('tasks'))
-
-@app.route('/store')
-@login_required
-def store():
-    products = Product.query.order_by(Product.created_at.desc()).all()
-    # Get IDs of products the user has already purchased
-    purchased_ids = [p.product_id for p in current_user.purchases]
-    return render_template('store.html', products=products, purchased_ids=purchased_ids)
-
-@app.route('/store/buy/<int:product_id>', methods=['POST'])
-@login_required
-def buy_product(product_id):
-    product = Product.query.get_or_404(product_id)
-    
-    # Check if already purchased for digital products only
-    if product.product_type != 'physical':
-        existing_purchase = Purchase.query.filter_by(user_id=current_user.id, product_id=product.id).first()
-        if existing_purchase:
-            flash('لقد قمت بشراء هذا المنتج مسبقاً.', 'info')
-            return redirect(url_for('my_products'))
-        
-    if current_user.balance < product.price:
-        flash('رصيدك غير كافٍ لشراء هذا المنتج.', 'danger')
-        return redirect(url_for('store'))
-        
-    delivery_name = None
-    delivery_phone = None
-    delivery_state = None
-    status = 'completed'
-    code_received = None
-    
-    if product.product_type == 'physical':
-        delivery_name = request.form.get('delivery_name')
-        delivery_phone = request.form.get('delivery_phone')
-        delivery_state = request.form.get('delivery_state')
-        
-        if not delivery_name or not delivery_phone or not delivery_state:
-            flash('يرجى تعبئة جميع بيانات التوصيل.', 'danger')
-            return redirect(url_for('store'))
-            
-        status = 'pending'
-    elif product.product_type == 'digital_code':
-        if not product.code_content or not product.code_content.strip():
-            flash('عذراً، لقد نفدت الأكواد لهذا المنتج.', 'danger')
-            return redirect(url_for('store'))
-            
-        codes = [c.strip() for c in product.code_content.split('\n') if c.strip()]
-        if not codes:
-            flash('عذراً، لقد نفدت الأكواد لهذا المنتج.', 'danger')
-            return redirect(url_for('store'))
-            
-        code_received = codes.pop(0)
-        product.code_content = '\n'.join(codes)
-        
-    # Deduct balance
-    current_user.balance -= product.price
-    
-    # Create purchase
-    new_purchase = Purchase(
-        user_id=current_user.id, 
-        product_id=product.id, 
-        price_paid=product.price,
-        delivery_name=delivery_name,
-        delivery_phone=delivery_phone,
-        delivery_state=delivery_state,
-        status=status,
-        code_received=code_received
-    )
-    db.session.add(new_purchase)
-    
-    # Process referral reward
-    if current_user.referred_by:
-        referrer = User.query.get(current_user.referred_by)
-        if referrer:
-            if referrer.is_upgraded:
-                reward = product.price * 0.40
-            else:
-                reward = product.price * 0.20
-            referrer.balance += reward
-            
-            # Notify referrer
-            notif = Notification(user_id=referrer.id, message=f'حصلت على عمولة {reward:.2f}$ من شراء أحد إحالاتك لمنتج في المتجر.', type='success')
-            db.session.add(notif)
-            
-    # Add revenue to total platform revenue (remaining percentage)
-    config = AppConfig.query.first()
-    if config:
-        if current_user.referred_by and referrer:
-            platform_revenue = product.price - reward
-        else:
-            platform_revenue = product.price
-        config.total_revenue += platform_revenue
-        
-    db.session.commit()
-    flash('تم شراء المنتج بنجاح! يمكنك الآن تحميله.', 'success')
-    return redirect(url_for('my_products'))
-
-@app.route('/store/my_products')
-@login_required
-def my_products():
-    purchases = Purchase.query.filter_by(user_id=current_user.id).order_by(Purchase.purchased_at.desc()).all()
-    return render_template('my_products.html', purchases=purchases)
 
 # Admin Routes
 @app.route('/admin')
@@ -1041,58 +551,25 @@ def admin_dashboard():
         u.total_invites = len(referrals)
         
         u.active_invites = 0
-        u.inactive_invites = 0
-        u.upgraded_invites = 0
-        
         for r in referrals:
-            if r.is_upgraded:
-                u.upgraded_invites += 1
-                
-            r_completed = CompletedTask.query.filter_by(user_id=r.id).count()
-            if r_completed >= 10:
+            if r.fast_goal_tasks_completed >= 10:
                 u.active_invites += 1
-            else:
-                u.inactive_invites += 1
                 
-        u.upgraded_percentage = (u.upgraded_invites / u.total_invites * 100) if u.total_invites > 0 else 0
-        
     task_query = request.args.get('tq', '')
     if task_query:
         tasks = Task.query.filter(Task.title.ilike(f'%{task_query}%') | Task.link.ilike(f'%{task_query}%')).order_by(Task.id.desc()).all()
     else:
         tasks = Task.query.order_by(Task.id.desc()).all()
         
-    # Add stats to tasks
     for task in tasks:
         task.completions_count = CompletedTask.query.filter_by(task_id=task.id).count()
         
     config = AppConfig.query.first()
     
-    # Withdrawal Requests
     pending_withdrawals = WithdrawalRequest.query.filter_by(status='pending').order_by(WithdrawalRequest.created_at.desc()).all()
     completed_withdrawals = WithdrawalRequest.query.filter(WithdrawalRequest.status.in_(['approved', 'rejected'])).order_by(WithdrawalRequest.processed_at.desc()).limit(15).all()
     
-    # Stats
     total_users = User.query.count()
-    # Updated calculation for VIP users using is_upgraded property
-    upgraded_users = sum(1 for u in User.query.all() if u.is_upgraded)
-    total_paid_result = db.session.query(db.func.sum(WithdrawalRequest.amount)).filter_by(status='approved').scalar()
-    total_paid = total_paid_result if total_paid_result else 0.0
-    pending_amount_result = db.session.query(db.func.sum(WithdrawalRequest.amount)).filter_by(status='pending').scalar()
-    pending_amount = pending_amount_result if pending_amount_result else 0.0
-
-    # Ad settings
-    ads = Advertisement.query.all()
-    # Ensure there are 3 ads in the database for rendering
-    if len(ads) < 3:
-        for _ in range(3 - len(ads)):
-            new_ad = Advertisement(image_url='', target_url='', is_active=False)
-            db.session.add(new_ad)
-        db.session.commit()
-        ads = Advertisement.query.all()
-
-    # Products
-    products = Product.query.order_by(Product.created_at.desc()).all()
     
     return render_template('admin_dashboard.html', 
                            users=users, 
@@ -1100,12 +577,7 @@ def admin_dashboard():
                            config=config,
                            pending_withdrawals=pending_withdrawals,
                            completed_withdrawals=completed_withdrawals,
-                           total_users=total_users,
-                           upgraded_users=upgraded_users,
-                           total_paid=total_paid,
-                           pending_amount=pending_amount,
-                           ads=ads,
-                           products=products)
+                           total_users=total_users)
 
 @app.route('/admin/withdrawals/<int:req_id>/<action>', methods=['POST'])
 @admin_required
@@ -1118,76 +590,37 @@ def admin_process_withdrawal(req_id, action):
     if action == 'approve':
         req.status = 'approved'
         req.processed_at = datetime.utcnow()
-        notif = Notification(user_id=req.user_id, message=f'تمت الموافقة على طلب سحب بقيمة {req.amount}$.', type='success')
+        notif = Notification(user_id=req.user_id, message=f'تمت الموافقة على طلبك.', type='success')
         db.session.add(notif)
-        flash(f'تمت الموافقة على سحب {req.amount}$ للمستخدم {req.user.username}.', 'success')
+        flash(f'تمت الموافقة للمستخدم {req.user.username}.', 'success')
     elif action == 'reject':
         reason = request.form.get('reason', 'سبب غير محدد')
         req.status = 'rejected'
         req.rejection_reason = reason
         req.processed_at = datetime.utcnow()
-        # Refund 50% of the amount (deduct 50%)
-        req.user.balance += (req.amount * 0.5)
-        notif = Notification(user_id=req.user_id, message=f'تم رفض طلب سحب بقيمة {req.amount}$ بسبب: {reason}. وتم خصم 50% من الأموال.', type='danger')
+        req.user.fast_goal_claimed = False
+        notif = Notification(user_id=req.user_id, message=f'تم رفض طلبك بسبب: {reason}. يمكنك المحاولة مجدداً.', type='danger')
         db.session.add(notif)
-        flash(f'تم رفض طلب السحب بسبب "{reason}" وتم تصفير 50% من الأموال للمستخدم {req.user.username}.', 'info')
+        flash(f'تم رفض الطلب للمستخدم {req.user.username}.', 'info')
         
     db.session.commit()
     return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/ad/update', methods=['POST'])
-@admin_required
-def admin_update_ad():
-    ads = Advertisement.query.all()
-    # Ensure there are 3 ads in the database
-    while len(ads) < 3:
-        new_ad = Advertisement(image_url='', target_url='', is_active=False)
-        db.session.add(new_ad)
-        db.session.commit()
-        ads.append(new_ad)
-
-    for i in range(1, 4):
-        ad = ads[i-1]
-        image_url = request.form.get(f'image_url_{i}')
-        target_url = request.form.get(f'target_url_{i}')
-        is_active = request.form.get(f'is_active_{i}') == 'on'
-        
-        if image_url is not None and target_url is not None:
-            ad.image_url = image_url
-            ad.target_url = target_url
-            ad.is_active = is_active
-
-    if request.form.get('reset_stats') == 'on':
-        for ad in ads:
-            ad.views = 0
-            ad.clicks = 0
-            
-    db.session.commit()
-    flash('تم تحديث إعدادات الإعلانات بنجاح.', 'success')
-    return redirect(url_for('admin_dashboard') + '?tab=ad')
 
 @app.route('/admin/config/update', methods=['POST'])
 @admin_required
 def admin_update_config():
     config = AppConfig.query.first()
-    normal_limit = request.form.get('normal_daily_limit')
-    upgraded_limit = request.form.get('upgraded_daily_limit')
-    telegram_agent_link = request.form.get('telegram_agent_link')
+    daily_task_limit = request.form.get('daily_task_limit')
     instagram_agent_link = request.form.get('instagram_agent_link')
     
-    if normal_limit and upgraded_limit:
-        config.normal_daily_limit = int(normal_limit)
-        config.upgraded_daily_limit = int(upgraded_limit)
-        
-    if telegram_agent_link:
-        config.telegram_agent_link = telegram_agent_link
+    if daily_task_limit:
+        config.daily_task_limit = int(daily_task_limit)
         
     if instagram_agent_link:
         config.instagram_agent_link = instagram_agent_link
         
     db.session.commit()
     flash('تم تحديث الإعدادات بنجاح.', 'success')
-        
     return redirect(url_for('admin_dashboard') + '?tab=tasks')
 
 @app.route('/admin/tasks/add', methods=['POST'])
@@ -1196,29 +629,13 @@ def admin_add_task():
     task_type = request.form.get('task_type', 'normal')
     
     if task_type == 'follow':
-        platform = request.form.get('platform')
         username = request.form.get('target_username')
-        if platform == 'tiktok':
-            title = 'متابعة حساب تيك توك'
-            description = 'قم بمتابعة هذا الحساب على تيك توك'
-            link = f'https://tiktok.com/@{username}' if not username.startswith('@') else f'https://tiktok.com/{username}'
-        elif platform == 'instagram':
-            title = 'متابعة حساب انستغرام'
-            description = 'قم بمتابعة هذا الحساب على انستغرام'
-            link = f'https://instagram.com/{username}'
-        else:
-            flash('منصة غير صالحة.', 'danger')
-            return redirect(url_for('admin_dashboard'))
+        title = 'متابعة حساب انستغرام'
+        description = 'قم بمتابعة هذا الحساب على انستغرام'
+        link = f'https://instagram.com/{username}'
     elif task_type == 'comment':
-        platform = request.form.get('platform')
         post_link = request.form.get('target_link')
-        if platform == 'tiktok':
-            title = 'إعجاب وتعليق على بوست تيك توك'
-        elif platform == 'instagram':
-            title = 'إعجاب وتعليق على بوست انستغرام'
-        else:
-            title = 'إعجاب وتعليق على بوست'
-            
+        title = 'إعجاب وتعليق على بوست انستغرام'
         description = 'إعجاب وتعليق ايجابي'
         link = post_link
     else:
@@ -1266,14 +683,6 @@ def admin_update_task(task_id):
     if link is not None:
         task.link = link
         
-    reward_normal = request.form.get('reward_normal', type=float)
-    if reward_normal is not None:
-        task.reward_normal = reward_normal
-        
-    reward_upgraded = request.form.get('reward_upgraded', type=float)
-    if reward_upgraded is not None:
-        task.reward_upgraded = reward_upgraded
-        
     max_completions = request.form.get('max_completions')
     task.max_completions = int(max_completions) if max_completions else None
         
@@ -1299,101 +708,6 @@ def admin_delete_task(task_id):
     flash('تم حذف المهمة بنجاح.', 'success')
     return redirect(url_for('admin_dashboard'))
 
-@app.route('/admin/products/add', methods=['POST'])
-@admin_required
-def admin_add_product():
-    name = request.form.get('name')
-    description = request.form.get('description')
-    price = request.form.get('price', type=float)
-    image_url = request.form.get('image_url')
-    product_type = request.form.get('product_type', 'digital_link')
-    file_url = request.form.get('file_url')
-    code_content = request.form.get('code_content')
-    
-    if not name or not description or price is None:
-        flash('يرجى ملء الحقول الأساسية (الاسم، الوصف، السعر).', 'danger')
-        return redirect(url_for('admin_dashboard') + '?tab=products')
-        
-    if product_type == 'digital_link' and not file_url:
-        flash('يرجى إضافة رابط المنتج الرقمي.', 'danger')
-        return redirect(url_for('admin_dashboard') + '?tab=products')
-        
-    if product_type == 'digital_code' and not code_content:
-        flash('يرجى إضافة أكواد المنتج الرقمي.', 'danger')
-        return redirect(url_for('admin_dashboard') + '?tab=products')
-        
-    new_product = Product(
-        name=name,
-        description=description,
-        price=price,
-        image_url=image_url,
-        product_type=product_type,
-        file_url=file_url if product_type == 'digital_link' else None,
-        code_content=code_content if product_type == 'digital_code' else None
-    )
-    db.session.add(new_product)
-    db.session.commit()
-    
-    flash('تمت إضافة المنتج بنجاح.', 'success')
-    return redirect(url_for('admin_dashboard') + '?tab=products')
-
-@app.route('/admin/products/delete/<int:product_id>', methods=['POST'])
-@admin_required
-def admin_delete_product(product_id):
-    product = Product.query.get_or_404(product_id)
-    # Don't delete purchases, just nullify the product reference or leave it
-    # Actually, if we delete the product, it will cause issues with purchases if not cascade delete.
-    # We should delete purchases first or set them to null. For simplicity, we'll cascade delete purchases.
-    Purchase.query.filter_by(product_id=product.id).delete()
-    db.session.delete(product)
-    db.session.commit()
-    
-    flash('تم حذف المنتج بنجاح.', 'success')
-    return redirect(url_for('admin_dashboard') + '?tab=products')
-
-@app.route('/admin/users/update/<int:user_id>', methods=['POST'])
-@admin_required
-def admin_update_user(user_id):
-    user = User.query.get_or_404(user_id)
-    balance = request.form.get('balance')
-    if balance is not None:
-        try:
-            user.balance = float(balance)
-            db.session.commit()
-            flash(f'تم تحديث رصيد المستخدم {user.username} بنجاح.', 'success')
-        except ValueError:
-            flash('الرصيد المدخل غير صالح.', 'danger')
-            
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/admin/user/<int:user_id>/update_membership', methods=['POST'])
-@admin_required
-def admin_update_user_membership(user_id):
-    user = User.query.get_or_404(user_id)
-    membership_type = request.form.get('membership_type')
-    
-    if membership_type in ['free', 'vip_10_days', 'vip_lifetime']:
-        user.membership_type = membership_type
-        config = AppConfig.query.first()
-        
-        if membership_type == 'vip_10_days':
-            if config:
-                config.total_revenue += 10.0
-            user.membership_expires_at = datetime.utcnow() + timedelta(days=10)
-        elif membership_type == 'vip_lifetime':
-            if config:
-                config.total_revenue += 40.0
-            user.membership_expires_at = None
-        else:
-            user.membership_expires_at = None
-            
-        db.session.commit()
-        flash(f'تم تحديث باقة المستخدم {user.username} بنجاح واحتساب العوائد.', 'success')
-    else:
-        flash('الباقة المحددة غير صالحة.', 'danger')
-        
-    return redirect(url_for('admin_dashboard'))
-
 @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
 @admin_required
 def admin_delete_user(user_id):
@@ -1402,7 +716,6 @@ def admin_delete_user(user_id):
         flash('لا يمكن حذف حساب المسؤول.', 'danger')
         return redirect(url_for('admin_dashboard'))
         
-    # Remove references to this user
     User.query.filter_by(referred_by=user.id).update({User.referred_by: None})
     CompletedTask.query.filter_by(user_id=user.id).delete()
     WithdrawalRequest.query.filter_by(user_id=user.id).delete()
@@ -1435,10 +748,7 @@ def export_backup():
         'tasks': [model_to_dict(t) for t in Task.query.all()],
         'completed_tasks': [model_to_dict(c) for c in CompletedTask.query.all()],
         'withdrawals': [model_to_dict(w) for w in WithdrawalRequest.query.all()],
-        'config': [model_to_dict(c) for c in AppConfig.query.all()],
-        'advertisements': [model_to_dict(a) for a in Advertisement.query.all()],
-        'products': [model_to_dict(p) for p in Product.query.all()],
-        'purchases': [model_to_dict(p) for p in Purchase.query.all()]
+        'config': [model_to_dict(c) for c in AppConfig.query.all()]
     }
     
     response = app.response_class(
@@ -1469,16 +779,11 @@ def import_backup():
     try:
         data = json.load(file)
         
-        # Clear existing data
-        Purchase.query.delete()
-        Product.query.delete()
-        Advertisement.query.delete()
         WithdrawalRequest.query.delete()
         CompletedTask.query.delete()
         Task.query.delete()
         AppConfig.query.delete()
         
-        # Remove foreign keys before deleting users
         User.query.update({User.referred_by: None})
         User.query.delete()
         
@@ -1490,65 +795,36 @@ def import_backup():
         def parse_date(val):
             return date.fromisoformat(val) if val else None
 
-        # Restore Users
         for u_data in data.get('users', []):
-            u = User(**{k: v for k, v in u_data.items() if k not in ['created_at', 'ccp_last_changed', 'instagram_last_changed', 'tiktok_last_changed', 'membership_expires_at', 'fast_goal_last_task_date']})
-            u.created_at = parse_dt(u_data.get('created_at'))
+            u = User(**{k: v for k, v in u_data.items() if k not in ['created_at', 'ccp_last_changed', 'instagram_last_changed', 'fast_goal_last_task_date']})
             u.ccp_last_changed = parse_dt(u_data.get('ccp_last_changed'))
             u.instagram_last_changed = parse_dt(u_data.get('instagram_last_changed'))
-            u.tiktok_last_changed = parse_dt(u_data.get('tiktok_last_changed'))
-            u.membership_expires_at = parse_dt(u_data.get('membership_expires_at'))
             u.fast_goal_last_task_date = parse_date(u_data.get('fast_goal_last_task_date'))
             db.session.add(u)
         db.session.commit()
         
-        # Restore Tasks
         for t_data in data.get('tasks', []):
-            t = Task(**{k: v for k, v in t_data.items() if k != 'created_at'})
-            t.created_at = parse_dt(t_data.get('created_at'))
+            t = Task(**{k: v for k, v in t_data.items()})
             db.session.add(t)
             
-        # Restore Config
         for c_data in data.get('config', []):
-            c = AppConfig(**{k: v for k, v in c_data.items() if k != 'last_updated'})
-            c.last_updated = parse_dt(c_data.get('last_updated'))
+            c = AppConfig(**{k: v for k, v in c_data.items()})
             db.session.add(c)
             
-        # Restore Completed Tasks
         for ct_data in data.get('completed_tasks', []):
             ct = CompletedTask(**{k: v for k, v in ct_data.items() if k != 'completed_at'})
             ct.completed_at = parse_dt(ct_data.get('completed_at'))
             db.session.add(ct)
             
-        # Restore Withdrawals
         for w_data in data.get('withdrawals', []):
             w = WithdrawalRequest(**{k: v for k, v in w_data.items() if k not in ['created_at', 'processed_at']})
             w.created_at = parse_dt(w_data.get('created_at'))
             w.processed_at = parse_dt(w_data.get('processed_at'))
             db.session.add(w)
             
-        # Restore Advertisements
-        for a_data in data.get('advertisements', []):
-            a = Advertisement(**{k: v for k, v in a_data.items() if k != 'created_at'})
-            a.created_at = parse_dt(a_data.get('created_at'))
-            db.session.add(a)
-            
-        # Restore Products
-        for p_data in data.get('products', []):
-            p = Product(**{k: v for k, v in p_data.items() if k != 'created_at'})
-            p.created_at = parse_dt(p_data.get('created_at'))
-            db.session.add(p)
-            
-        # Restore Purchases
-        for pur_data in data.get('purchases', []):
-            pur = Purchase(**{k: v for k, v in pur_data.items() if k != 'purchased_at'})
-            pur.purchased_at = parse_dt(pur_data.get('purchased_at'))
-            db.session.add(pur)
-            
         db.session.commit()
         flash('تم استعادة النسخة الاحتياطية بنجاح! يرجى تسجيل الدخول مجدداً.', 'success')
         
-        # Safe logout logic
         try:
             logout_user()
         except Exception:
@@ -1558,226 +834,10 @@ def import_backup():
         
     except Exception as e:
         db.session.rollback()
-        import traceback
-        traceback.print_exc()
         flash(f'حدث خطأ أثناء الاستعادة: {str(e)}', 'danger')
         return redirect(url_for('admin_dashboard') + '?tab=tasks')
 
-@app.route('/fast_goal')
-@login_required
-def fast_goal():
-    if not current_user.fast_goal_activated:
-        flash('يجب تفعيل ميزة الهدف السريع أولاً.', 'danger')
-        return redirect(url_for('dashboard'))
-        
-    # Reset daily tasks if it's a new day
-    if current_user.fast_goal_last_task_date != datetime.utcnow().date():
-        current_user.fast_goal_tasks_today = 0
-        current_user.fast_goal_last_task_date = datetime.utcnow().date()
-        db.session.commit()
-        
-    valid_referrals_count = 0
-    total_fg_referrals_count = User.query.filter_by(referred_by=current_user.id, fast_goal_activated=True).count()
-    fg_referrals = User.query.filter_by(referred_by=current_user.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 20).all()
-    for r in fg_referrals:
-        r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 10).count()
-        if r_invites >= 200:
-            valid_referrals_count += 1
-            
-    inactive_referrals_count = max(0, total_fg_referrals_count - valid_referrals_count)
-            
-    # Fetch uncompleted tasks for fast goal
-    all_completed_task_ids = [ct.task_id for ct in CompletedTask.query.filter_by(user_id=current_user.id).all()]
-    query = Task.query
-    if all_completed_task_ids:
-        query = query.filter(~Task.id.in_(all_completed_task_ids))
-        
-    if current_user.gender:
-        query = query.filter((Task.target_gender == 'all') | (Task.target_gender == current_user.gender))
-        
-    if current_user.age:
-        query = query.filter((Task.min_age == None) | (Task.min_age <= current_user.age))
-        query = query.filter((Task.max_age == None) | (Task.max_age >= current_user.age))
-        
-    uncompleted_tasks_raw = query.order_by(Task.is_boosted.desc(), Task.id.desc()).all()
-    
-    available_tasks = []
-    for t in uncompleted_tasks_raw:
-        if t.max_completions:
-            c_count = CompletedTask.query.filter_by(task_id=t.id).count()
-            if c_count >= t.max_completions:
-                continue
-        available_tasks.append(t)
-        
-    remaining_slots = max(0, 10 - current_user.fast_goal_tasks_today)
-    tasks_to_show = available_tasks[:remaining_slots]
-
-    # Include tasks completed today to show them as completed
-    today = datetime.utcnow().date()
-    today_completions = CompletedTask.query.filter(
-        CompletedTask.user_id == current_user.id,
-        CompletedTask.completion_type == 'fast_goal',
-        db.func.date(CompletedTask.completed_at) == today
-    ).all()
-    today_completed_task_ids = [ct.task_id for ct in today_completions]
-
-    if today_completed_task_ids:
-        today_completed_tasks = Task.query.filter(Task.id.in_(today_completed_task_ids)).all()
-    else:
-        today_completed_tasks = []
-
-    all_tasks_to_show = tasks_to_show + today_completed_tasks
-
-    return render_template('fast_goal.html',
-                           user=current_user,
-                           valid_referrals_count=valid_referrals_count,
-                           inactive_referrals_count=inactive_referrals_count,
-                           tasks=all_tasks_to_show,
-                           remaining_slots=remaining_slots,
-                           completed_task_ids=today_completed_task_ids)
-
-@app.route('/fast_goal/activate', methods=['POST'])
-@login_required
-def activate_fast_goal():
-    if current_user.fast_goal_activated:
-        flash('الميزة مفعلة بالفعل.', 'info')
-        return redirect(url_for('fast_goal'))
-        
-    if not current_user.ccp_account or not current_user.tiktok_username or not current_user.instagram_username:
-        flash('يرجى إكمال جميع معلومات حسابك (بيانات الدفع، تيك توك، انستغرام) قبل تفعيل ميزة الهدف السريع.', 'danger')
-        return redirect(url_for('settings'))
-        
-    current_user.fast_goal_activated = True
-    current_user.fast_goal_last_task_date = datetime.utcnow().date()
-    db.session.commit()
-    
-    flash('تم تفعيل ميزة الهدف السريع بنجاح!', 'success')
-    return redirect(url_for('fast_goal'))
-
-@app.route('/fast_goal/complete_task/<int:task_id>', methods=['POST'])
-@login_required
-def complete_fast_goal_task(task_id):
-    if not current_user.fast_goal_activated:
-        return redirect(url_for('dashboard'))
-        
-    if current_user.fast_goal_last_task_date != datetime.utcnow().date():
-        current_user.fast_goal_tasks_today = 0
-        current_user.fast_goal_last_task_date = datetime.utcnow().date()
-        
-    if current_user.fast_goal_tasks_today >= 10:
-        flash('لقد أكملت الحد الأقصى من مهام الهدف السريع لهذا اليوم (10 مهام).', 'warning')
-        return redirect(url_for('fast_goal'))
-        
-    if current_user.fast_goal_tasks_completed >= 100:
-        flash('لقد أكملت جميع مهام الهدف السريع (100 مهمة)!', 'success')
-        return redirect(url_for('fast_goal'))
-        
-    task = Task.query.get_or_404(task_id)
-    
-    # Check max completions limit
-    if task.max_completions:
-        c_count = CompletedTask.query.filter_by(task_id=task.id).count()
-        if c_count >= task.max_completions:
-            flash('عذراً، هذه المهمة وصلت للحد الأقصى من الإنجازات ولم تعد متاحة.', 'danger')
-            return redirect(url_for('fast_goal'))
-            
-    # Check gender targeting
-    if task.target_gender != 'all' and task.target_gender != current_user.gender:
-        flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (الجنس).', 'danger')
-        return redirect(url_for('fast_goal'))
-        
-    # Check age targeting
-    if current_user.age:
-        if task.min_age and current_user.age < task.min_age:
-            flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (العمر).', 'danger')
-            return redirect(url_for('fast_goal'))
-        if task.max_age and current_user.age > task.max_age:
-            flash('هذه المهمة غير متاحة لك بناءً على متطلبات الاستهداف (العمر).', 'danger')
-            return redirect(url_for('fast_goal'))
-
-    if CompletedTask.query.filter_by(user_id=current_user.id, task_id=task.id).first():
-        flash('لقد قمت بإنجاز هذه المهمة مسبقاً.', 'danger')
-        return redirect(url_for('fast_goal'))
-    
-    new_completion = CompletedTask(user_id=current_user.id, task_id=task.id, completion_type='fast_goal')
-    db.session.add(new_completion)
-    
-    current_user.fast_goal_tasks_today += 1
-    current_user.fast_goal_tasks_completed += 1
-    
-    # Check if this user just reached 10 tasks to reward their referrer
-    user_completed_count = CompletedTask.query.filter_by(user_id=current_user.id).count()
-    if user_completed_count == 10 and current_user.referred_by:
-        referrer = User.query.get(current_user.referred_by)
-        if referrer:
-            give_reward = True
-            if referrer.fast_goal_activated and not referrer.is_upgraded:
-                give_reward = False
-                
-            if give_reward:
-                if referrer.is_upgraded:
-                    referrer.balance += 0.2
-                else:
-                    referrer.balance += 0.05
-            db.session.commit()
-            
-    # If boosted task and reached max_completions, delete it
-    if task.is_boosted and task.max_completions:
-        current_count = CompletedTask.query.filter_by(task_id=task.id).count()
-        if current_count >= task.max_completions:
-            db.session.delete(task)
-            
-    db.session.commit()
-    
-    return redirect(url_for('fast_goal'))
-
-@app.route('/fast_goal/claim', methods=['POST'])
-@login_required
-def claim_fast_goal():
-    if not current_user.fast_goal_activated:
-        return redirect(url_for('dashboard'))
-        
-    if current_user.fast_goal_claimed:
-        flash('لقد قمت بسحب مكافأة الهدف السريع مسبقاً.', 'info')
-        return redirect(url_for('fast_goal'))
-        
-    valid_referrals_count = 0
-    fg_referrals = User.query.filter_by(referred_by=current_user.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 20).all()
-    for r in fg_referrals:
-        r_invites = User.query.filter_by(referred_by=r.id, fast_goal_activated=True).filter(User.fast_goal_tasks_completed >= 10).count()
-        if r_invites >= 200:
-            valid_referrals_count += 1
-            
-    if valid_referrals_count < 400 or current_user.fast_goal_tasks_completed < 100:
-        flash('لم تكمل شروط الهدف السريع بعد (400 دعوة نشطة + 100 مهمة).', 'danger')
-        return redirect(url_for('fast_goal'))
-        
-    existing_request = WithdrawalRequest.query.filter_by(user_id=current_user.id, status='pending').first()
-    if existing_request:
-        flash('لديك طلب سحب قيد المعالجة بالفعل. يرجى الانتظار حتى يتم معالجته أولاً.', 'danger')
-        return redirect(url_for('fast_goal'))
-        
-    # Mark as claimed and create withdrawal request directly
-    current_user.fast_goal_claimed = True
-    new_request = WithdrawalRequest(
-        user_id=current_user.id, 
-        amount=120.0, 
-        ccp_account=current_user.ccp_account,
-        payment_method=current_user.payment_method
-    )
-    db.session.add(new_request)
-    
-    # Notify user
-    notif = Notification(user_id=current_user.id, message='تهانينا! لقد حققت الهدف السريع وتم إرسال طلب سحب بقيمة 120$.', type='success')
-    db.session.add(notif)
-    
-    db.session.commit()
-    
-    flash('تهانينا! تم تحقيق الهدف السريع وإرسال طلب سحب بقيمة 120$ بنجاح!', 'success')
-    return redirect(url_for('dashboard'))
-
 def ping_server():
-    """Ping the server every 30-40 seconds to keep it awake."""
     url = os.environ.get('RENDER_EXTERNAL_URL', 'https://purple-oxtp.onrender.com')
     while True:
         try:
@@ -1786,7 +846,6 @@ def ping_server():
         except Exception as e:
             pass
 
-# Start the ping thread as a daemon so it exits when the main process exits
 ping_thread = threading.Thread(target=ping_server, daemon=True)
 ping_thread.start()
 

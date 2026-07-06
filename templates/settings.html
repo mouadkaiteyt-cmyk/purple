@@ -1,293 +1,105 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto py-4 px-1 sm:px-3 lg:px-4">
-    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
-        
-        <!-- Header Section -->
-        <div class="bg-gradient-to-r from-purple-600 to-fuchsia-700 px-6 py-8 sm:px-8 sm:py-10 text-white">
-            <div class="flex items-center space-x-4 space-x-reverse">
-                <div class="bg-white/20 p-3 rounded-2xl backdrop-blur-sm shrink-0">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
+<div class="max-w-2xl mx-auto space-y-6 pb-20">
+    <!-- Header -->
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-black text-slate-900 mb-1">الإعدادات</h2>
+            <p class="text-slate-500 text-sm">إدارة معلومات حسابك وطرق الدفع</p>
+        </div>
+        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        </div>
+    </div>
+
+    <!-- User Info -->
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+        <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+            <svg class="w-5 h-5 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            المعلومات الشخصية
+        </h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">اسم المستخدم</label>
+                <div class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 font-medium">
+                    {{ user.username }}
                 </div>
-                <div>
-                    <h1 class="text-2xl sm:text-3xl font-bold">إعدادات الحساب</h1>
-                    <p class="mt-1 sm:mt-2 text-purple-100 font-medium text-sm sm:text-base">قم بإدارة بيانات الدفع ومعلومات حساباتك الاجتماعية بكل سهولة.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">البريد الإلكتروني</label>
+                <div class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 font-medium">
+                    {{ user.email }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <form action="{{ url_for('settings') }}" method="POST" class="space-y-6">
+        
+        <!-- Instagram Info -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                <svg class="w-5 h-5 text-pink-600 ml-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 1.926-6.965 6.495-.058 1.28-.072 1.688-.072 4.947s.014 3.667.072 4.947c.185 4.564 2.603 6.29 6.965 6.495 1.28.058 1.688.072 4.947.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-1.929 6.965-6.495.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.183-4.568-2.607-6.294-6.965-6.495-1.28-.058-1.688-.072-4.948-.072zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                حساب انستغرام
+            </h3>
+            <p class="text-sm text-slate-500 mb-4">أدخل اسم حسابك (Username) الذي ستقوم بتنفيذ المهام به. يجب أن يكون الحساب حقيقياً.</p>
+            
+            {% if not can_change_ig %}
+            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-xl text-sm mb-4">
+                لا يمكنك تغيير حساب انستغرام الآن. يرجى الانتظار {{ ig_days_remaining }} يوماً.
+            </div>
+            {% endif %}
+
+            <div>
+                <label for="instagram_username" class="sr-only">اسم حساب انستغرام</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-slate-400 font-bold">@</span>
+                    </div>
+                    <input type="text" name="instagram_username" id="instagram_username" value="{{ user.instagram_username or '' }}" {% if not can_change_ig %}readonly{% endif %} class="block w-full pl-8 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 sm:text-sm {% if not can_change_ig %}bg-slate-100 text-slate-500 cursor-not-allowed{% endif %}" placeholder="username">
                 </div>
             </div>
         </div>
 
-        <div class="p-4 sm:p-8">
-            <form action="{{ url_for('settings') }}" method="POST" class="space-y-6 sm:space-y-8">
+        <!-- Payment Info -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                <svg class="w-5 h-5 text-emerald-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                طريقة الدفع
+            </h3>
+            <p class="text-sm text-slate-500 mb-4">أدخل بيانات الدفع الخاصة بك لاستلام أرباحك.</p>
+            
+            {% if not can_change_ccp %}
+            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-xl text-sm mb-4">
+                لا يمكنك تغيير حساب الدفع الآن. يرجى الانتظار {{ ccp_days_remaining }} يوماً.
+            </div>
+            {% endif %}
+
+            <div class="space-y-4">
+                <div>
+                    <label for="payment_method" class="block text-sm font-medium text-slate-700 mb-1">طريقة الدفع</label>
+                    <select id="payment_method" name="payment_method" class="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                        <option value="ccp" {% if user.payment_method == 'ccp' %}selected{% endif %}>بريد الجزائر (CCP)</option>
+                        <option value="binance" {% if user.payment_method == 'binance' %}selected{% endif %}>Binance Pay</option>
+                        <option value="paypal" {% if user.payment_method == 'paypal' %}selected{% endif %}>PayPal</option>
+                        <option value="orange_cash" {% if user.payment_method == 'orange_cash' %}selected{% endif %}>Orange Cash</option>
+                    </select>
+                </div>
                 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-                    <!-- Payment Method & Account -->
-                    <div class="lg:col-span-2 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
-                        <div class="absolute top-0 right-0 w-2 h-full bg-blue-500 transform origin-right transition-transform duration-300 group-hover:scale-y-110"></div>
-                        <div class="flex items-center mb-6">
-                            <div class="bg-blue-50 p-3 rounded-xl text-blue-600 ml-3 shrink-0">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-lg sm:text-xl font-bold text-slate-800">بيانات السحب</h3>
-                        </div>
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-3">طريقة الدفع</label>
-                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                    <label class="cursor-pointer relative">
-                                        <input type="radio" name="payment_method" value="ccp" class="peer sr-only" {% if user.payment_method == 'ccp' or not user.payment_method %}checked{% endif %} {% if not can_change_ccp %}disabled{% endif %}>
-                                        <div class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200 bg-white peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all hover:border-blue-300">
-                                            <svg class="w-6 h-6 mb-2 text-slate-600 peer-checked:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                                            <span class="text-xs font-bold text-center text-slate-600 peer-checked:text-blue-700">بريد الجزائر</span>
-                                        </div>
-                                    </label>
-                                    
-                                    <label class="cursor-pointer relative">
-                                        <input type="radio" name="payment_method" value="binance" class="peer sr-only" {% if user.payment_method == 'binance' %}checked{% endif %} {% if not can_change_ccp %}disabled{% endif %}>
-                                        <div class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200 bg-white peer-checked:border-yellow-500 peer-checked:bg-yellow-50 transition-all hover:border-yellow-300">
-                                            <svg class="w-6 h-6 mb-2 text-slate-600 peer-checked:text-yellow-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12.001 5.485L7.765 9.721 9.886 11.842 12.001 9.727 14.116 11.842 16.237 9.721 12.001 5.485zM5.644 11.842L1.408 16.078 3.529 18.199 7.765 13.963 5.644 11.842zM18.358 11.842L16.237 13.963 20.473 18.199 22.594 16.078 18.358 11.842zM12.001 13.963L9.886 16.078 12.001 18.193 14.116 16.078 12.001 13.963zM12.001 0L6.705 5.295 8.826 7.416 12.001 4.241 15.176 7.416 17.297 5.295 12.001 0zM12.001 19.254L8.826 16.078 6.705 18.199 12.001 23.494 17.297 18.199 15.176 16.078 12.001 19.254z"/></svg>
-                                            <span class="text-xs font-bold text-center text-slate-600 peer-checked:text-yellow-700">Binance</span>
-                                        </div>
-                                    </label>
-                                    
-                                    <label class="cursor-pointer relative">
-                                        <input type="radio" name="payment_method" value="paypal" class="peer sr-only" {% if user.payment_method == 'paypal' %}checked{% endif %} {% if not can_change_ccp %}disabled{% endif %}>
-                                        <div class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200 bg-white peer-checked:border-blue-700 peer-checked:bg-blue-50 transition-all hover:border-blue-400">
-                                            <svg class="w-6 h-6 mb-2 text-slate-600 peer-checked:text-blue-800" fill="currentColor" viewBox="0 0 24 24"><path d="M7.076 21.337H2.47a.641.641 0 01-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z"/></svg>
-                                            <span class="text-xs font-bold text-center text-slate-600 peer-checked:text-blue-800">PayPal</span>
-                                        </div>
-                                    </label>
-                                    
-                                    <label class="cursor-pointer relative">
-                                        <input type="radio" name="payment_method" value="orange_cash" class="peer sr-only" {% if user.payment_method == 'orange_cash' %}checked{% endif %} {% if not can_change_ccp %}disabled{% endif %}>
-                                        <div class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200 bg-white peer-checked:border-orange-500 peer-checked:bg-orange-50 transition-all hover:border-orange-300">
-                                            <svg class="w-6 h-6 mb-2 text-slate-600 peer-checked:text-orange-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
-                                            <span class="text-xs font-bold text-center text-slate-600 peer-checked:text-orange-700">Orange</span>
-                                        </div>
-                                    </label>
-                                </div>
-                                {% if not can_change_ccp %}
-                                <input type="hidden" name="payment_method" value="{{ user.payment_method }}">
-                                {% endif %}
-                            </div>
-
-                            <div class="flex flex-col justify-center">
-                                <label class="block text-sm font-semibold text-slate-700 mb-2 mt-4 lg:mt-0">معرف الحساب / الرقم</label>
-                                <input type="text" name="ccp_account" value="{{ user.ccp_account or '' }}" 
-                                    class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-left {% if not can_change_ccp %}bg-slate-100 text-slate-500 cursor-not-allowed opacity-70{% else %}bg-slate-50 focus:bg-white{% endif %}" 
-                                    dir="ltr" placeholder="رقم الحساب أو الإيميل" {% if not can_change_ccp %}readonly{% endif %}>
-                                
-                                <div class="mt-3">
-                                    {% if not can_change_ccp %}
-                                        <div class="p-3 rounded-xl bg-red-50 border border-red-100 flex items-start">
-                                            <svg class="w-5 h-5 text-red-500 ml-2 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                            <div>
-                                                <p class="text-xs text-red-600 font-medium">يجب الانتظار <strong>{{ ccp_days_remaining }}</strong> يوماً لتتمكن من التغيير.</p>
-                                            </div>
-                                        </div>
-                                    {% else %}
-                                        <p class="text-xs text-slate-500 flex items-center">
-                                            <svg class="w-4 h-4 ml-1 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                            يمكن التغيير مرة كل 60 يوماً
-                                        </p>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Instagram -->
-                    <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
-                        <div class="absolute top-0 right-0 w-2 h-full bg-pink-500 transform origin-right transition-transform duration-300 group-hover:scale-y-110"></div>
-                        <div class="flex items-center mb-6">
-                            <div class="bg-pink-50 p-3 rounded-xl text-pink-600 ml-3 shrink-0">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                    <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                            <h3 class="text-lg sm:text-xl font-bold text-slate-800">حساب انستغرام</h3>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <label class="block text-sm font-semibold text-slate-700">اسم المستخدم (يوزر انستغرام)</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <span class="text-slate-400 font-medium sm:text-sm">@</span>
-                                </div>
-                                <input type="text" name="instagram_username" value="{{ user.instagram_username or '' }}" 
-                                    class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-colors text-left {% if not can_change_ig %}bg-slate-100 text-slate-500 cursor-not-allowed opacity-70{% else %}bg-slate-50 focus:bg-white{% endif %}" 
-                                    dir="ltr" placeholder="username" {% if not can_change_ig %}readonly{% endif %}>
-                            </div>
-                            
-                            <div class="mt-3">
-                                {% if not can_change_ig %}
-                                    <div class="p-3 rounded-xl bg-red-50 border border-red-100 flex items-start">
-                                        <svg class="w-5 h-5 text-red-500 ml-2 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                        <div>
-                                            <p class="text-xs text-red-600 font-medium">يجب الانتظار <strong>{{ ig_days_remaining }}</strong> يوماً لتتمكن من التغيير.</p>
-                                        </div>
-                                    </div>
-                                {% else %}
-                                    <p class="text-xs text-slate-500 flex items-center">
-                                        <svg class="w-4 h-4 ml-1 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        يمكن التغيير مرة كل 60 يوماً
-                                    </p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    <!-- TikTok -->
-                    <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
-                        <div class="absolute top-0 right-0 w-2 h-full bg-slate-900 transform origin-right transition-transform duration-300 group-hover:scale-y-110"></div>
-                        <div class="flex items-center mb-6">
-                            <div class="bg-slate-100 p-3 rounded-xl text-slate-900 ml-3 shrink-0">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.16-3.44-3.48-3.45-5.65-.03-1.93.89-3.9 2.45-5.11 1.25-.97 2.87-1.44 4.41-1.25v4.02c-1.12-.17-2.31.25-2.98 1.18-.55.77-.6 1.83-.17 2.65.41.79 1.25 1.34 2.14 1.38 1.32.06 2.59-.88 2.83-2.18.06-.31.06-.63.06-.94-.01-5.71-.01-11.42 0-17.13h3.98z"/>
-                                </svg>
-                            </div>
-                            <h3 class="text-lg sm:text-xl font-bold text-slate-800">حساب تيك توك</h3>
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <label class="block text-sm font-semibold text-slate-700">اسم المستخدم (يوزر تيك توك)</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <span class="text-slate-400 font-medium sm:text-sm">@</span>
-                                </div>
-                                <input type="text" name="tiktok_username" value="{{ user.tiktok_username or '' }}" 
-                                    class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-colors text-left {% if not can_change_tk %}bg-slate-100 text-slate-500 cursor-not-allowed opacity-70{% else %}bg-slate-50 focus:bg-white{% endif %}" 
-                                    dir="ltr" placeholder="username" {% if not can_change_tk %}readonly{% endif %}>
-                            </div>
-                            
-                            <div class="mt-3">
-                                {% if not can_change_tk %}
-                                    <div class="p-3 rounded-xl bg-red-50 border border-red-100 flex items-start">
-                                        <svg class="w-5 h-5 text-red-500 ml-2 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                        <div>
-                                            <p class="text-xs text-red-600 font-medium">يجب الانتظار <strong>{{ tk_days_remaining }}</strong> يوماً لتتمكن من التغيير.</p>
-                                        </div>
-                                    </div>
-                                {% else %}
-                                    <p class="text-xs text-slate-500 flex items-center">
-                                        <svg class="w-4 h-4 ml-1 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        يمكن التغيير مرة كل 60 يوماً
-                                    </p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+                <div>
+                    <label for="ccp_account" class="block text-sm font-medium text-slate-700 mb-1">معرف الحساب (رقم CCP أو Binance ID أو الإيميل)</label>
+                    <input type="text" name="ccp_account" id="ccp_account" value="{{ user.ccp_account or '' }}" {% if not can_change_ccp %}readonly{% endif %} class="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 sm:text-sm {% if not can_change_ccp %}bg-slate-100 text-slate-500 cursor-not-allowed{% endif %}" placeholder="أدخل رقم الحساب">
                 </div>
-
-                <div class="pt-6 border-t border-slate-100">
-                    <button type="submit" class="w-full sm:w-auto px-6 py-4 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 flex items-center justify-center whitespace-normal text-center sm:text-right">
-                        <svg class="w-5 h-5 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        <span>حفظ بيانات الحساب</span>
-                    </button>
-                </div>
-            </form>
-
-            <!-- Manual Withdraw (Radio Cards) -->
-            <form action="{{ url_for('manual_withdraw') }}" method="POST" class="mt-8 pt-8 border-t border-slate-200">
-                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-2 h-full bg-emerald-500 transform origin-right transition-transform duration-300 group-hover:scale-y-110"></div>
-                    <div class="flex items-center mb-6">
-                        <div class="bg-emerald-50 p-3 rounded-xl text-emerald-600 ml-3 shrink-0">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg sm:text-xl font-bold text-slate-800">طلب سحب الأرباح</h3>
-                            <p class="text-sm text-slate-500">اختر المبلغ الذي تريد سحبه. يتطلب 40 مهمة و 100 إحالة نشطة.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <label class="block text-sm font-semibold text-slate-700">اختر مبلغ السحب</label>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            
-                            <!-- 40$ Option -->
-                            <label class="relative flex cursor-pointer rounded-xl border bg-white p-4 shadow-sm focus:outline-none border-emerald-500 ring-1 ring-emerald-500">
-                                <input type="radio" name="amount" value="40" class="sr-only" checked onchange="updateRadioCards(this)">
-                                <span class="flex flex-1">
-                                    <span class="flex flex-col">
-                                        <span class="block text-lg font-bold text-slate-900">40 دولار</span>
-                                        <span class="mt-1 flex items-center text-sm text-slate-500">الحد الأدنى للسحب</span>
-                                    </span>
-                                </span>
-                                <svg class="h-5 w-5 text-emerald-600 block check-icon" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
-                                </svg>
-                            </label>
-
-                            <!-- 80$ Option -->
-                            <label class="relative flex cursor-pointer rounded-xl border bg-white p-4 shadow-sm focus:outline-none border-slate-300">
-                                <input type="radio" name="amount" value="80" class="sr-only" onchange="updateRadioCards(this)">
-                                <span class="flex flex-1">
-                                    <span class="flex flex-col">
-                                        <span class="block text-lg font-bold text-slate-900">80 دولار</span>
-                                        <span class="mt-1 flex items-center text-sm text-slate-500">سحب متوسط</span>
-                                    </span>
-                                </span>
-                                <svg class="h-5 w-5 text-emerald-600 hidden check-icon" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
-                                </svg>
-                            </label>
-
-                            <!-- 120$ Option -->
-                            <label class="relative flex cursor-pointer rounded-xl border bg-white p-4 shadow-sm focus:outline-none border-slate-300">
-                                <input type="radio" name="amount" value="120" class="sr-only" onchange="updateRadioCards(this)">
-                                <span class="flex flex-1">
-                                    <span class="flex flex-col">
-                                        <span class="block text-lg font-bold text-slate-900">120 دولار</span>
-                                        <span class="mt-1 flex items-center text-sm text-slate-500">سحب كبير</span>
-                                    </span>
-                                </span>
-                                <svg class="h-5 w-5 text-emerald-600 hidden check-icon" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
-                                </svg>
-                            </label>
-
-                        </div>
-                        
-                        <div class="pt-4">
-                            <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all duration-200 flex items-center justify-center">
-                                <span>تأكيد طلب السحب</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
-</div>
 
-<script>
-function updateRadioCards(selectedRadio) {
-    // Reset all cards
-    const allLabels = document.querySelectorAll('input[name="amount"]').forEach(radio => {
-        const label = radio.closest('label');
-        const icon = label.querySelector('.check-icon');
-        
-        if(radio === selectedRadio) {
-            label.classList.add('border-emerald-500', 'ring-1', 'ring-emerald-500');
-            label.classList.remove('border-slate-300');
-            icon.classList.remove('hidden');
-            icon.classList.add('block');
-        } else {
-            label.classList.remove('border-emerald-500', 'ring-1', 'ring-emerald-500');
-            label.classList.add('border-slate-300');
-            icon.classList.remove('block');
-            icon.classList.add('hidden');
-        }
-    });
-}
-</script>
+        <div>
+            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition">
+                حفظ التغييرات
+            </button>
+        </div>
+    </form>
+</div>
 {% endblock %}
