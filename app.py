@@ -270,8 +270,9 @@ def dashboard():
     valid_referrals_count = 0
     all_referred = User.query.filter_by(referred_by=current_user.id).all()
     for r in all_referred:
-        # A referral is considered active if they completed at least 10 tasks
-        if r.fast_goal_tasks_completed >= 10:
+        # A referral is considered active if they completed at least 50 tasks and invited 50 users (active or inactive)
+        r_total_invites = User.query.filter_by(referred_by=r.id).count()
+        if r.fast_goal_tasks_completed >= 50 and r_total_invites >= 50:
             valid_referrals_count += 1
             
     referrals_count = len(all_referred)
@@ -409,7 +410,8 @@ def claim_goal():
     valid_referrals_count = 0
     all_referred = User.query.filter_by(referred_by=current_user.id).all()
     for r in all_referred:
-        if r.fast_goal_tasks_completed >= 10:
+        r_total_invites = User.query.filter_by(referred_by=r.id).count()
+        if r.fast_goal_tasks_completed >= 50 and r_total_invites >= 50:
             valid_referrals_count += 1
             
     target_tasks = 100
@@ -552,7 +554,8 @@ def admin_dashboard():
         
         u.active_invites = 0
         for r in referrals:
-            if r.fast_goal_tasks_completed >= 10:
+            r_total_invites = User.query.filter_by(referred_by=r.id).count()
+            if r.fast_goal_tasks_completed >= 50 and r_total_invites >= 50:
                 u.active_invites += 1
                 
     task_query = request.args.get('tq', '')
