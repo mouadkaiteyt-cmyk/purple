@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8">
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+            <div>
+                <h2 class="text-xl font-bold text-slate-900 mb-1">إنجازات المهمة: {{ task.title }}</h2>
+                <p class="text-sm text-slate-500">إجمالي الإنجازات: {{ completions|length }}</p>
+            </div>
+            <a href="{{ url_for('admin_dashboard') }}?tab=tasks" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold transition">العودة للمهام</a>
+        </div>
+        
+        <div class="p-4 border-b border-slate-100 bg-slate-50">
+            <form method="GET" class="flex max-w-md">
+                <input type="text" name="q" value="{{ request.args.get('q', '') }}" placeholder="بحث باسم حساب انستغرام أو المستخدم..." class="w-full pl-4 pr-4 py-2 border border-slate-300 rounded-r-xl focus:ring-purple-500 focus:border-purple-500 text-sm">
+                <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-l-xl text-sm font-bold hover:bg-purple-700">بحث</button>
+            </form>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">المستخدم</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">حساب انستغرام</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">معلومات الدفع</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">تاريخ الإنجاز</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-slate-200">
+                    {% for comp in completions %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-slate-900">{{ comp.user.username }}</div>
+                            <div class="text-xs text-slate-500">{{ comp.user.email }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if comp.user.instagram_username %}
+                            <a href="https://instagram.com/{{ comp.user.instagram_username }}" target="_blank" class="text-purple-600 hover:text-purple-800 text-sm font-bold">@{{ comp.user.instagram_username }}</a>
+                            {% else %}
+                            <span class="text-slate-400 text-sm">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-slate-900">{{ comp.user.payment_method|upper }}</div>
+                            <div class="text-xs text-slate-500 font-mono">{{ comp.user.ccp_account or '-' }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {{ comp.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-10 text-center text-slate-500">
+                            لا توجد إنجازات مطابقة للبحث
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -974,7 +974,7 @@ def my_products():
 def admin_dashboard():
     search_query = request.args.get('q', '')
     if search_query:
-        users = User.query.filter(User.username.ilike(f'%{search_query}%') | User.email.ilike(f'%{search_query}%')).all()
+        users = User.query.filter(User.username.ilike(f'%{search_query}%') | User.email.ilike(f'%{search_query}%') | User.instagram_username.ilike(f'%{search_query}%') | User.ccp_account.ilike(f'%{search_query}%')).all()
     else:
         users = User.query.all()
         
@@ -1108,6 +1108,19 @@ def admin_update_ad():
     db.session.commit()
     flash('تم تحديث إعدادات الإعلانات بنجاح.', 'success')
     return redirect(url_for('admin_dashboard') + '?tab=ad')
+
+@app.route('/admin/task/<int:task_id>/completions')
+@admin_required
+def admin_task_completions(task_id):
+    task = Task.query.get_or_404(task_id)
+    search_query = request.args.get('q', '')
+    
+    query = CompletedTask.query.filter_by(task_id=task.id).join(User)
+    if search_query:
+        query = query.filter(User.username.ilike(f'%{search_query}%') | User.instagram_username.ilike(f'%{search_query}%') | User.ccp_account.ilike(f'%{search_query}%'))
+        
+    completions = query.order_by(CompletedTask.completed_at.desc()).all()
+    return render_template('task_completions.html', task=task, completions=completions)
 
 @app.route('/admin/config/update', methods=['POST'])
 @admin_required

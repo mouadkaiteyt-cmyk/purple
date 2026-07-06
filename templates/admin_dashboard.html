@@ -62,7 +62,7 @@
             <div id="users" class="tab-content">
                 <div class="mb-4 flex justify-between items-center">
                     <form class="w-full max-w-md relative" method="GET" action="{{ url_for('admin_dashboard') }}">
-                        <input type="text" name="q" value="{{ request.args.get('q', '') }}" placeholder="بحث بالاسم أو البريد..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500">
+                        <input type="text" name="q" value="{{ request.args.get('q', '') }}" placeholder="بحث بالاسم، الإيميل، أو الحساب..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-xl focus:ring-purple-500 focus:border-purple-500">
                         <button type="submit" class="absolute left-3 top-2.5 text-slate-400 hover:text-purple-600">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </button>
@@ -215,7 +215,14 @@
 
                 <!-- Tasks List -->
                 <div>
-                    <h3 class="text-lg font-bold mb-4">المهام الحالية</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold">المهام الحالية</h3>
+                        <form method="GET" action="{{ url_for('admin_dashboard') }}" class="flex">
+                            <input type="hidden" name="tab" value="tasks">
+                            <input type="text" name="tq" value="{{ request.args.get('tq', '') }}" placeholder="بحث بعنوان المهمة أو الحساب..." class="pl-4 pr-4 py-2 border border-slate-300 rounded-r-xl focus:ring-purple-500 focus:border-purple-500 text-sm">
+                            <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-l-xl text-sm font-bold hover:bg-purple-700">بحث</button>
+                        </form>
+                    </div>
                     <div class="space-y-3">
                         {% for task in tasks %}
                         <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -227,6 +234,7 @@
                                 </div>
                             </div>
                             <div class="flex space-x-2 space-x-reverse">
+                                <a href="{{ url_for('admin_task_completions', task_id=task.id) }}" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-sm font-medium transition">الإنجازات</a>
                                 <button onclick="openEditTaskModal({{ task.id }}, '{{ task.title }}', '{{ task.description }}', '{{ task.link }}', '{{ task.max_completions or '' }}', '{{ task.target_gender }}', '{{ task.min_age or '' }}', '{{ task.max_age or '' }}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition">تعديل</button>
                                 <form action="{{ url_for('admin_delete_task', task_id=task.id) }}" method="POST" onsubmit="return confirm('تأكيد الحذف؟');">
                                     <button type="submit" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-sm font-medium transition">حذف</button>

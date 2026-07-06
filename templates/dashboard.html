@@ -90,7 +90,7 @@
             </svg>
             رابط الدعوة الخاص بك
         </h3>
-        <p class="text-sm text-slate-600 mb-4">انسخ الرابط وشاركه مع أصدقائك للحصول على دعوات نشطة (يجب أن يكمل صديقك 50 مهمة + 50 دعوة لتُحتسب دعوة نشطة).</p>
+        <p class="text-sm text-slate-600 mb-4">انسخ الرابط وشاركه مع أصدقائك للحصول على دعوات نشطة (يجب أن يكمل صديقك 50% من المهام + 50 دعوة لتُحتسب دعوة نشطة).</p>
         
         <div class="flex items-center space-x-2 space-x-reverse bg-slate-50 p-2 rounded-xl border border-slate-200">
             <input type="text" readonly value="{{ request.host_url }}register?ref={{ user.referral_code }}" id="refLink" class="bg-transparent border-none flex-1 text-sm text-slate-600 focus:ring-0 outline-none px-2 font-mono">
@@ -130,11 +130,11 @@
                         </div>
                         {% else %}
                         <div class="flex items-center space-x-3 space-x-reverse">
-                            <a href="{{ task.link }}" target="_blank" class="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition shadow-sm">
+                            <a href="{{ task.link }}" target="_blank" onclick="enableConfirm('{{ task.id }}')" class="inline-flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition shadow-sm">
                                 تنفيذ المهمة
                             </a>
                             <form action="{{ url_for('complete_task', task_id=task.id) }}" method="POST" class="inline-block">
-                                <button type="submit" class="inline-flex items-center justify-center bg-white border-2 border-purple-600 text-purple-600 hover:bg-purple-50 text-sm font-bold px-4 py-2 rounded-xl transition">
+                                <button type="submit" id="confirm-btn-{{ task.id }}" disabled class="inline-flex items-center justify-center bg-slate-100 border-2 border-slate-200 text-slate-400 text-sm font-bold px-4 py-2 rounded-xl transition cursor-not-allowed">
                                     تأكيد
                                 </button>
                             </form>
@@ -157,6 +157,15 @@
 </div>
 
 <script>
+function enableConfirm(taskId) {
+    const btn = document.getElementById('confirm-btn-' + taskId);
+    if(btn) {
+        btn.disabled = false;
+        btn.classList.remove('bg-slate-100', 'border-slate-200', 'text-slate-400', 'cursor-not-allowed');
+        btn.classList.add('bg-white', 'border-purple-600', 'text-purple-600', 'hover:bg-purple-50');
+    }
+}
+
 function copyRef() {
     var copyText = document.getElementById("refLink");
     copyText.select();
