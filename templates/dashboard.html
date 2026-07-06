@@ -184,6 +184,22 @@
 </div>
 
 <script>
+// Restore scroll position after task completion
+document.addEventListener("DOMContentLoaded", function() { 
+    var scrollpos = sessionStorage.getItem('dashboard_scrollpos');
+    if (scrollpos) {
+        window.scrollTo(0, parseInt(scrollpos));
+        sessionStorage.removeItem('dashboard_scrollpos');
+    }
+});
+
+// Save scroll position before submitting the form
+document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function() {
+        sessionStorage.setItem('dashboard_scrollpos', window.scrollY);
+    });
+});
+
 function enableConfirm(taskId) {
     const btn = document.getElementById('confirm-btn-' + taskId);
     if(btn) {
