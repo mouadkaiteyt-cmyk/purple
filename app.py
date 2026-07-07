@@ -346,7 +346,7 @@ def dashboard():
     all_tasks_to_show = tasks_to_show + today_completed_tasks
     all_tasks_to_show.sort(key=lambda x: x.id, reverse=True)
     
-    has_pending_withdrawal = WithdrawalRequest.query.filter_by(user_id=current_user.id, status='pending').first() is not None
+    latest_withdrawal = WithdrawalRequest.query.filter_by(user_id=current_user.id).order_by(WithdrawalRequest.created_at.desc()).first()
     
     has_missing_info = False
     if current_user.goal_choice == 'money':
@@ -372,7 +372,7 @@ def dashboard():
                            invites_completed=invites_completed,
                            total_progress=total_progress,
                            remaining_slots=remaining_slots,
-                           has_pending_withdrawal=has_pending_withdrawal,
+                           latest_withdrawal=latest_withdrawal,
                            has_missing_info=has_missing_info,
                            completed_task_ids=today_completed_task_ids)
 
