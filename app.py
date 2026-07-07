@@ -661,7 +661,23 @@ def admin_process_withdrawal(req_id, action):
     if action == 'approve':
         req.status = 'approved'
         req.processed_at = datetime.utcnow()
-        notif = Notification(user_id=req.user_id, message=f'تمت الموافقة على طلبك.', type='success')
+        
+        if req.user.goal_choice == 'followers':
+            new_task = Task(
+                title='متابعة حساب انستغرام',
+                description='قم بمتابعة هذا الحساب على انستغرام',
+                link=f'https://instagram.com/{req.user.target_followers_page}',
+                max_completions=10000,
+                target_gender=req.user.target_followers_gender,
+                min_age=None,
+                max_age=None
+            )
+            db.session.add(new_task)
+            msg = 'تمت الموافقة على طلبك وإضافة صفحتك لقائمة المهام.'
+        else:
+            msg = 'تمت الموافقة على طلبك.'
+            
+        notif = Notification(user_id=req.user_id, message=msg, type='success')
         db.session.add(notif)
         flash(f'تمت الموافقة للمستخدم {req.user.username}.', 'success')
     elif action == 'reject':

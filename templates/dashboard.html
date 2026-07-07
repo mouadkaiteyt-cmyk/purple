@@ -92,8 +92,14 @@
                     <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mb-4 shadow-inner">
                         <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                     </div>
-                    <h4 class="text-green-900 font-black text-xl mb-2">مبارك لك! 🎉</h4>
-                    <p class="text-green-700 text-sm mb-6">تم التواصل معك عبر انستقرام وتسليمك الجائزة بنجاح.</p>
+                    <h4 class="text-green-900 font-black text-xl mb-2">مبارك لك!</h4>
+                    <p class="text-green-700 text-sm mb-6">
+                        {% if user.goal_choice == 'money' %}
+                        تم التواصل معك عبر انستقرام وتسليمك الجائزة بنجاح.
+                        {% else %}
+                        تم اضافة صفحتك لقائمة المهام.
+                        {% endif %}
+                    </p>
                     <form action="{{ url_for('start_over') }}" method="POST" class="w-full">
                         <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -168,7 +174,7 @@
                     <p class="text-purple-700 text-sm mb-6">أنت الآن جاهز لطلب الجائزة الخاصة بك.</p>
                     <form action="{{ url_for('claim_goal') }}" method="POST" class="w-full">
                         <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-4 px-4 rounded-xl shadow-md transition-all transform hover:-translate-y-0.5">
-                            {% if user.goal_choice == 'money' %}🎉 طلب استلام 80 دولار 🎉{% else %}🎉 طلب استلام 10,000 متابع 🎉{% endif %}
+                            {% if user.goal_choice == 'money' %}طلب استلام 80 دولار{% else %}طلب استلام 10,000 متابع{% endif %}
                         </button>
                     </form>
                 </div>
