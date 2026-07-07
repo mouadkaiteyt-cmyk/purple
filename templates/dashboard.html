@@ -76,12 +76,12 @@
                 </div>
             </div>
 
-            {% if has_pending_withdrawal %}
+            {% if has_pending_withdrawal or (tasks_completed >= target_tasks and invites_completed < target_invites) %}
             <div class="mt-6 text-center">
                 <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center">
                     <svg class="w-8 h-8 text-blue-600 mb-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     المهام قيد المراجعة
-                    <span class="text-sm font-normal mt-1 block">يرجى الانتظار، طلبك قيد المراجعة من قبل الإدارة للحصول على الجائزة.</span>
+                    <span class="text-sm font-normal mt-1 block">يرجى الانتظار، طلبك قيد المراجعة.</span>
                 </div>
             </div>
             {% elif has_missing_info %}
