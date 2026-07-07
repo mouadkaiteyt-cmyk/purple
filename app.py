@@ -486,6 +486,29 @@ def claim_goal():
     flash(msg, 'success')
     return redirect(url_for('dashboard'))
 
+@app.route('/clear_withdrawal_status', methods=['POST'])
+@login_required
+def clear_withdrawal_status():
+    latest = WithdrawalRequest.query.filter_by(user_id=current_user.id, status='rejected').order_by(WithdrawalRequest.created_at.desc()).first()
+    if latest:
+        latest.status = 'acknowledged'
+        db.session.commit()
+    return redirect(url_for('dashboard'))
+
+@app.route('/start_over', methods=['POST'])
+@login_required
+def start_over():
+    latest = WithdrawalRequest.query.filter_by(user_id=current_user.id, status='approved').order_by(WithdrawalRequest.created_at.desc()).first()
+    if latest:
+        latest.status = 'archived'
+        current_user.fast_goal_tasks_completed = 0
+        current_user.fast_goal_claimed = False
+        CompletedTask.query.filter_by(user_id=current_user.id).delete()
+        User.query.filter_by(referred_by=current_user.id).update({User.referred_by: None})
+        db.session.commit()
+        flash('تم تصفية حسابك ويمكنك الآن البدء من جديد!', 'success')
+    return redirect(url_for('dashboard'))
+
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
@@ -643,10 +666,41 @@ def admin_process_withdrawal(req_id, action):
         flash(f'تمت الموافقة للمستخدم {req.user.username}.', 'success')
     elif action == 'reject':
         reason = request.form.get('reason', 'سبب غير محدد')
+        tasks_to_subtract = int(request.form.get('tasks_to_subtract', 0))
+        referrals_to_subtract = int(request.form.get('referrals_to_subtract', 0))
+        
         req.status = 'rejected'
         req.rejection_reason = reason
         req.processed_at = datetime.utcnow()
         req.user.fast_goal_claimed = False
+        
+        if tasks_to_subtract > 0:
+            req.user.fast_goal_tasks_completed = max(0, req.user.fast_goal_tasks_completed - tasks_to_subtract)
+            
+        if referrals_to_subtract > 0:
+            all_referred = User.query.filter_by(referred_by=req.user.id).all()
+            active_referred = []
+            for r in all_referred:
+                r_total_invites = User.query.filter_by(referred_by=r.id).count()
+                if r.fast_goal_tasks_completed >= 50 and r_total_invites >= 50:
+                    active_referred.append(r)
+            
+            deducted = 0
+            for r in active_referred:
+                if deducted < referrals_to_subtract:
+                    r.referred_by = None
+                    deducted += 1
+                else:
+                    break
+                    
+            if deducted < referrals_to_subtract:
+                for r in all_referred:
+                    if r not in active_referred and deducted < referrals_to_subtract:
+                        r.referred_by = None
+                        deducted += 1
+                    elif deducted >= referrals_to_subtract:
+                        break
+        
         notif = Notification(user_id=req.user_id, message=f'تم رفض طلبك بسبب: {reason}. يمكنك المحاولة مجدداً.', type='danger')
         db.session.add(notif)
         flash(f'تم رفض الطلب للمستخدم {req.user.username}.', 'info')

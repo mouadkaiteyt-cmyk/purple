@@ -86,11 +86,16 @@
             </div>
             {% elif latest_withdrawal and latest_withdrawal.status == 'approved' %}
             <div class="mt-6 text-center">
-                <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center">
+                <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center mb-4">
                     <svg class="w-8 h-8 text-green-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                     مبارك!
                     <span class="text-sm font-normal mt-1 block">تم التواصل معك عبر انستقرام لاستلام الجائزة.</span>
                 </div>
+                <form action="{{ url_for('start_over') }}" method="POST">
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition transform hover:-translate-y-1">
+                        تم الاستلام وبدأ من جديد
+                    </button>
+                </form>
             </div>
             {% elif latest_withdrawal and latest_withdrawal.status == 'rejected' and not user.fast_goal_claimed and tasks_completed >= target_tasks and invites_completed >= target_invites %}
             <div class="mt-6 text-center">
@@ -100,26 +105,36 @@
                     <span class="text-sm font-normal mt-1 block">تم رفض جائزتك لعدم اتمام المهام.</span>
                 </div>
                 {% if has_missing_info %}
-                <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-4 rounded-xl flex flex-col items-center justify-center">
+                <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-4 rounded-xl flex flex-col items-center justify-center mb-4">
                     <span class="font-bold">يرجى إدخال المعلومات من الإعدادات</span>
                     <span class="text-sm mt-1 mb-3 block">تحتاج إلى إكمال بيانات حسابك (انستغرام والدفع/الصفحة المستهدفة) قبل التمكن من السحب.</span>
                     <a href="{{ url_for('settings') }}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition text-sm shadow-sm">الذهاب للإعدادات</a>
                 </div>
                 {% else %}
-                <form action="{{ url_for('claim_goal') }}" method="POST">
+                <form action="{{ url_for('claim_goal') }}" method="POST" class="mb-4">
                     <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow-md transition transform hover:-translate-y-1">
                         {% if user.goal_choice == 'money' %}طلب السحب{% else %}طلب ترويج الصفحة{% endif %}
                     </button>
                 </form>
                 {% endif %}
+                <form action="{{ url_for('clear_withdrawal_status') }}" method="POST">
+                    <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl shadow-md transition transform hover:-translate-y-1">
+                        تصفية واستمرار
+                    </button>
+                </form>
             </div>
             {% elif latest_withdrawal and latest_withdrawal.status == 'rejected' %}
             <div class="mt-6 text-center">
-                <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center">
+                <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center mb-4">
                     <svg class="w-8 h-8 text-red-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     تم الرفض
                     <span class="text-sm font-normal mt-1 block">تم رفض جائزتك لعدم اتمام المهام.</span>
                 </div>
+                <form action="{{ url_for('clear_withdrawal_status') }}" method="POST">
+                    <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl shadow-md transition transform hover:-translate-y-1">
+                        تصفية واستمرار
+                    </button>
+                </form>
             </div>
             {% elif has_missing_info %}
             <div class="mt-6 text-center">
