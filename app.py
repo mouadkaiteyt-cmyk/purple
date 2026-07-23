@@ -336,11 +336,11 @@ def dashboard():
         today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         recent_notif = Notification.query.filter(
             Notification.user_id == current_user.id,
-            Notification.message == 'لديك أكثر من +5 مهمات نشطة',
+            Notification.message == 'لديك أكثر من 5 مهمات نشطة جاهزة للتنفيذ',
             Notification.created_at >= today_start
         ).first()
         if not recent_notif:
-            notif = Notification(user_id=current_user.id, message='لديك أكثر من +5 مهمات نشطة', type='info')
+            notif = Notification(user_id=current_user.id, message='لديك أكثر من 5 مهمات نشطة جاهزة للتنفيذ', type='info')
             db.session.add(notif)
             db.session.commit()
             notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()

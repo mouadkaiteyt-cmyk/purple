@@ -479,7 +479,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (Notification.permission === "granted") {
                 if (!sessionStorage.getItem('notified_tasks')) {
                     new Notification("PURPLE+", {
-                        body: "لديك أكثر من +5 مهمات نشطة جاهزة للتنفيذ",
+                        body: "لديك أكثر من 5 مهمات نشطة جاهزة للتنفيذ",
                         icon: "/static/icons/icon-192x192.png"
                     });
                     sessionStorage.setItem('notified_tasks', 'true');
@@ -488,7 +488,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 Notification.requestPermission().then(function (permission) {
                     if (permission === "granted") {
                         new Notification("PURPLE+", {
-                            body: "لديك أكثر من +5 مهمات نشطة جاهزة للتنفيذ",
+                            body: "لديك أكثر من 5 مهمات نشطة جاهزة للتنفيذ",
                             icon: "/static/icons/icon-192x192.png"
                         });
                         sessionStorage.setItem('notified_tasks', 'true');
