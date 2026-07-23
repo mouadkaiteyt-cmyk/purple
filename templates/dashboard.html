@@ -471,6 +471,34 @@
 </div>
 
 <script>
+// Browser Notification for active tasks
+document.addEventListener("DOMContentLoaded", function() {
+    const availableTasks = {{ available_tasks_count | default(0) }};
+    if (availableTasks > 5) {
+        if ("Notification" in window) {
+            if (Notification.permission === "granted") {
+                if (!sessionStorage.getItem('notified_tasks')) {
+                    new Notification("PURPLE+", {
+                        body: "لديك أكثر من +5 مهمات نشطة جاهزة للتنفيذ",
+                        icon: "/static/icons/icon-192x192.png"
+                    });
+                    sessionStorage.setItem('notified_tasks', 'true');
+                }
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(function (permission) {
+                    if (permission === "granted") {
+                        new Notification("PURPLE+", {
+                            body: "لديك أكثر من +5 مهمات نشطة جاهزة للتنفيذ",
+                            icon: "/static/icons/icon-192x192.png"
+                        });
+                        sessionStorage.setItem('notified_tasks', 'true');
+                    }
+                });
+            }
+        }
+    }
+});
+
 // Restore scroll position after task completion
 document.addEventListener("DOMContentLoaded", function() { 
     var scrollpos = sessionStorage.getItem('dashboard_scrollpos');

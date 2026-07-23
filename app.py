@@ -329,6 +329,21 @@ def dashboard():
     limit = config.daily_task_limit if config else 10
     remaining_slots = max(0, limit - current_user.fast_goal_tasks_today)
     tasks_to_show = available_tasks[:remaining_slots]
+    available_tasks_count = len(available_tasks)
+
+    # Check if > 5 active tasks and no recent notification
+    if available_tasks_count > 5:
+        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        recent_notif = Notification.query.filter(
+            Notification.user_id == current_user.id,
+            Notification.message == 'لديك أكثر من +5 مهمات نشطة',
+            Notification.created_at >= today_start
+        ).first()
+        if not recent_notif:
+            notif = Notification(user_id=current_user.id, message='لديك أكثر من +5 مهمات نشطة', type='info')
+            db.session.add(notif)
+            db.session.commit()
+            notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
 
     # Include tasks completed today
     today = datetime.utcnow().date()
@@ -374,7 +389,8 @@ def dashboard():
                            remaining_slots=remaining_slots,
                            latest_withdrawal=latest_withdrawal,
                            has_missing_info=has_missing_info,
-                           completed_task_ids=today_completed_task_ids)
+                           completed_task_ids=today_completed_task_ids,
+                           available_tasks_count=available_tasks_count)
 
 @app.route('/tasks/complete/<int:task_id>', methods=['POST'])
 @login_required
